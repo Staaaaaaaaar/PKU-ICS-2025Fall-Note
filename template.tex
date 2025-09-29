@@ -1,0 +1,100 @@
+% 引入必要的包
+\usepackage{amsmath, amssymb, amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{eso-pic}
+\usepackage{fontawesome5}
+\usepackage{tocloft}
+
+% 文献引用
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}  
+\addbibresource{references.bib}  % 引入 references.bib 文件
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=black, citecolor=black}
+
+% 设置图片目录
+\graphicspath{{Figures/}}
+
+\definecolor{blackk}{HTML}{0d0d0d}
+\definecolor{cyan}{rgb}{0.0, 1.0, 1.0}          % 青色
+\definecolor{lightblue}{rgb}{0.68, 0.85, 0.9}   % 浅蓝色
+\definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}     % 墨绿色
+\definecolor{brownyellow}{rgb}{0.76, 0.60, 0.42} % 棕黄色
+
+% 页面布局设置
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+\setlength{\headheight}{14.5pt}
+\addtolength{\topmargin}{-2.5pt}
+
+% 添加封面图片
+% \AddToShipoutPicture*{
+%     \put(0,0){%
+%         \includegraphics[width=\paperwidth,height=\paperheight]{Figures/cover.jpg}}
+% }
+
+% 自定义标题样式
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{black}}    % 一级标题青色
+  {\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{cyan}} % 二级标题浅蓝色
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{lightblue}} % 三级标题墨绿色
+  {\thesubsubsection}{1em}{}
+
+\titleformat{\paragraph}
+  {\normalfont\normalsize\bfseries\color{darkgreen}} % 四级标题棕黄色
+  {\theparagraph}{1em}{}
+
+% 修改目录的字体颜色为黑色
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,  % 将目录超链接设置为黑色
+    urlcolor=magenta,
+    citecolor=black,
+    pdfborder={0 0 0}
+}
+
+% 页眉页脚设置
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+
+% \fancyfoot[R]{\href{https://github.com/hanlife02}{\faGithub\ Ethan}}
+
+% 代码高亮设置
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    frame=single,
+    breaklines=true
+}
+
+% 设置自定义样式的定理框
+\tcbuselibrary{theorems}
+% 定义定理的样式
+\newtcolorbox{dl}[1][]{colback=red!5!white,colframe=red!75!black,
+    fonttitle=\bfseries,title=定理, #1}
+
+% 定义定义的样式
+\newtcolorbox{dy}[1][]{colback=green!5!white,colframe=green!75!black,
+    fonttitle=\bfseries,title=定义, #1}
+
+% 定义公式的样式
+\newtcolorbox{gs}[1][]{colback=blue!5!white,colframe=blue!75!black,
+    fonttitle=\bfseries,title=公式, #1}
