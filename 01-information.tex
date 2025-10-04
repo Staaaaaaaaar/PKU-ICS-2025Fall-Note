@@ -132,7 +132,7 @@ C语言中\emph{字符串}被编码为一个以null（其值为0）字符结尾�
 
 \paragraph{拓展}
 \begin{itemize}
-    \item 零拓展（zero extension）：用于无符号数的拓展，高位补0。
+    \item 零拓展（zero extension）：用于无符号数的拓展，高位补 0 。
     \item 符号拓展（sign extension）：用于有符号数的拓展，高位补符号位。
 \end{itemize}
 \paragraph{截断}
@@ -235,34 +235,34 @@ $$V = (-1)^{s} \cdot M \cdot 2^E$$
 \end{itemize}
 将浮点数的位表示划分为三个字段，分别对这些值进行编码：
 \begin{itemize}
-    \item 一个单独的符号位 s 直接编码符号$s$。
-    \item k 位的阶码字段 $exp=e_{k-1}\ldots e_1e_0$ 编码阶码 E。
-    \item n 位小数字段 $frac=f_{n-1}\ldots f_1f_0$ 编码尾数 M, 但是编码出来的值也依赖于阶码字段的值是否等于 0。
+    \item 一个单独的符号位 s 直接编码符号$s$ 。
+    \item k 位的阶码字段 $exp=e_{k-1}\ldots e_1e_0$ 编码阶码 E 。
+    \item n 位小数字段 $frac=f_{n-1}\ldots f_1f_0$ 编码尾数 M ，但是编码出来的值也依赖于阶码字段的值是否等于 0 。
 \end{itemize}
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
-        类型      & 总位数 & 符号位(s) & 阶码位(k) & 尾数位(n) \\
+        类型          & 总位数 & 符号位(s) & 阶码位(k) & 尾数位(n) \\
         \hline
-        单精度(float)  & 32    & 1       & 8       & 23      \\
+        单精度(float)  & 32  & 1      & 8      & 23     \\
         \hline
-        双精度(double) & 64    & 1       & 11      & 52      \\
+        双精度(double) & 64  & 1      & 11     & 52     \\
         \hline
     \end{tabular}
 \end{table}
 
 \paragraph{分类}
 \begin{itemize}
-    \item 规格化的值（Normalized）：阶码字段不全为0，尾数字段有有效数字。
-    $$E=exp - Bias$$
-    $$M=1.f_{n-1}f_{n-2}\ldots f_0$$
-    其中，$Bias = 2^{k-1} - 1$。
-    \item 非规格化的值（Denormalized）：阶码字段全为0，尾数字段有有效数字。
-    $$E = 1 - Bias = - (2^{k-1} - 2)$$
-    $$M = 0.f_{n-1}f_{n-2}\ldots f_0$$
-    \item 无穷大（Infinity）：阶码字段全为1，尾数字段全为0。
-    \item NaN（Not a Number）：阶码字段全为1，尾数字段非全0。
+    \item 规格化的值（Normalized）：阶码字段不全为 0 ，尾数字段有有效数字。
+          $$E=exp - Bias$$
+          $$M=1.f_{n-1}f_{n-2}\ldots f_0$$
+          其中，$Bias = 2^{k-1} - 1$。
+    \item 非规格化的值（Denormalized）：阶码字段全为 0 ，尾数字段有有效数字。
+          $$E = 1 - Bias = - (2^{k-1} - 2)$$
+          $$M = 0.f_{n-1}f_{n-2}\ldots f_0$$
+    \item 无穷大（Infinity）：阶码字段全为 1 ，尾数字段全为 0 。
+    \item NaN（Not a Number）：阶码字段全为 1 ，尾数字段非全 0 。
 \end{itemize}
 
 \subsubsection{浮点数运算}
@@ -278,11 +278,11 @@ $$V = (-1)^{s} \cdot M \cdot 2^E$$
 $$ (-1)^{s_1}M_1 2^{E_1} \times (-1)^{s_2}M_2 2^{E_2} $$
 \begin{enumerate}
     \item 符号计算：结果的符号位为两个操作数符号位的异或。
-    $$s = s_1 \oplus s_2$$
+          $$s = s_1 \oplus s_2$$
     \item 阶码相加：将两个操作数的阶码相加。
-    $$E = E_1 + E_2$$
+          $$E = E_1 + E_2$$
     \item 尾数相乘：将两个操作数的尾数相乘。
-    $$M = M_1 \times M_2$$
+          $$M = M_1 \times M_2$$
     \item 规格化：如果结果的尾数不在规范化范围内，则对其进行规格化处理。
     \item 溢出检查：如果结果的阶码超出表示范围，则将结果设为无穷大。
     \item 舍入：根据所选的舍入模式对结果进行舍入。
@@ -293,7 +293,7 @@ $$ (-1)^{s_1}M_1 2^{E_1} + (-1)^{s_2}M_2 2^{E_2}, E_1 \geq E_2$$
 \begin{enumerate}
     \item 对阶：将阶码较小的数的尾数右移，直到两个数的阶码相等。
     \item 尾数相加：根据符号位对尾数进行加减运算。
-    $$M = (-1)^{s_1} M_1 + (-1)^{s_2} M_2 2^{E_2 - E_1}$$
+          $$M = (-1)^{s_1} M_1 + (-1)^{s_2} M_2 2^{E_2 - E_1}$$
     \item 规格化：如果结果的尾数不在规范化范围内，则对其进行规格化处理。
     \item 溢出检查：如果结果的阶码超出表示范围，则将结果设为无穷大。
     \item 舍入：根据所选的舍入模式对结果进行舍入。
