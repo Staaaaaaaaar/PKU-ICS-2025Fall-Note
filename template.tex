@@ -98,3 +98,7 @@
 % 定义公式的样式
 \newtcolorbox{gs}[1][]{colback=blue!5!white,colframe=blue!75!black,
     fonttitle=\bfseries,title=公式, #1}
+
+% 定义旁注的样式，支持传入参数作为标题
+\newtcolorbox{sidenote}[2][]{title=#2, #1}
+

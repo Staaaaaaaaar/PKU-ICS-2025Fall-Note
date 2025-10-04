@@ -1,0 +1,310 @@
+\section{信息的表示和处理}
+
+\subsection{信息存储}
+
+\paragraph{进制转换}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        十六进制 & 十进制 & 二进制  \\
+        \hline
+        0x0  & 0   & 0000 \\
+        \hline
+        0x1  & 1   & 0001 \\
+        \hline
+        0x2  & 2   & 0010 \\
+        \hline
+        0x3  & 3   & 0011 \\
+        \hline
+        0x4  & 4   & 0100 \\
+        \hline
+        0x5  & 5   & 0101 \\
+        \hline
+        0x6  & 6   & 0110 \\
+        \hline
+        0x7  & 7   & 0111 \\
+        \hline
+        0x8  & 8   & 1000 \\
+        \hline
+        0x9  & 9   & 1001 \\
+        \hline
+        0xA  & 10  & 1010 \\
+        \hline
+        0xB  & 11  & 1011 \\
+        \hline
+        0xC  & 12  & 1100 \\
+        \hline
+        0xD  & 13  & 1101 \\
+        \hline
+        0xE  & 14  & 1110 \\
+        \hline
+        0xF  & 15  & 1111 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{基本数据类型的存储}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        数据类型    & 32位 & 64位 \\
+        \hline
+        char    & 1   & 1   \\
+        \hline
+        short   & 2   & 2   \\
+        \hline
+        int     & 4   & 4   \\
+        \hline
+        long    & 4   & 8   \\
+        \hline
+        float   & 4   & 4   \\
+        \hline
+        double  & 8   & 8   \\
+        \hline
+        pointer & 4   & 8   \\
+        \hline
+    \end{tabular}
+\end{table}
+C语言中\emph{字符串}被编码为一个以null（其值为0）字符结尾的字符数组。每个字符都由ASCII字符码来表示。
+注意，十进制数字x的ASCII码正好是0x3x, 而终止字节的十六进制表示为0x00。
+
+\paragraph{寻址和字节顺序}
+多字节对象会被存储为连续的字节序列，对象的地址为所使用字节中最小的地址。按照从最低
+有效字节到最高有效字节的顺序存储对象的方法称为\emph{小端法}，反之则称为\emph{大端法}。
+\begin{itemize}
+    \item 小端法：x86，ARM等。
+    \item 大端法：Sun，Internet，PPC Mac等。
+\end{itemize}
+
+\subsection{信息处理}
+
+\paragraph{位级运算}
+\begin{itemize}
+    \item 按位与（AND）
+    \item 按位或（OR）
+    \item 按位异或（XOR）
+    \item 按位取反（NOT）
+\end{itemize}
+
+\paragraph{逻辑运算}
+\begin{itemize}
+    \item 逻辑与（AND）
+    \item 逻辑或（OR）
+    \item 逻辑非（NOT）
+\end{itemize}
+
+短路机制：在逻辑与（AND）和逻辑或（OR）运算中，如果第一个操作数已经能够确定整个表达式的值，则第二个操作数将不会被计算。
+
+\paragraph{移位运算}
+\begin{itemize}
+    \item 左移
+    \item 逻辑右移
+    \item 算术右移
+\end{itemize}
+
+\begin{sidenote}{位运算的优先级}
+    位运算符的优先级顺序从高到低依次为：
+    \begin{enumerate}
+        \item 按位取反（\verb|~|）
+        \item 加减乘除模（\verb|+ - * / %|）
+        \item 左移（\verb|<<|）和右移（\verb|>>|）
+        \item 按位与（\verb|&|）
+        \item 按位异或（\verb|^|）
+        \item 按位或（\verb!|!）
+    \end{enumerate}
+\end{sidenote}
+
+\subsection{整数}
+\subsubsection{整数表示}
+\paragraph{类型}
+\begin{itemize}
+    \item 无符号整数（unsigned int）
+          $$x = \sum_{i=0}^{w-1} b_i 2^i$$
+          $$UMin = 0, UMax = 2^w - 1$$
+    \item 有符号整数（signed int）
+          $$x = -b_{w-1} 2^{w-1} + \sum_{i=0}^{w-2} b_i 2^i$$
+          $$TMin = -2^{w-1}, TMax = 2^{w-1} - 1$$
+\end{itemize}
+
+处理同样字长的有符号数和无符号数之间相互转换的一般规则是：数值可能会改变，但是位模式不变。
+
+\paragraph{拓展}
+\begin{itemize}
+    \item 零拓展（zero extension）：用于无符号数的拓展，高位补0。
+    \item 符号拓展（sign extension）：用于有符号数的拓展，高位补符号位。
+\end{itemize}
+\paragraph{截断}
+截断是指将一个较长字长的整数转换为较短字长的整数。截断时，只保留低位的若干位，高位被丢弃。
+
+\begin{sidenote}{C语言中的隐式类型转换}
+    在C语言中，不同类型整数进行比较时，所有比 int 类型小的整数类型（如 char、short 等）会首先被提升为 int 类型。
+    如果两个数宽度不同（例如 int 和 long），宽度较小的类型会转换为宽度较大的类型。
+    最后，如果比较涉及有符号类型和无符号类型，有符号类型会被转换为无符号类型再进行对比。
+\end{sidenote}
+
+\subsubsection{整数运算}
+\paragraph{加减法}
+
+无符号数：
+$$
+    x +_w^u y =
+    \begin{cases}
+        x + y       & x + y < 2^w    \\
+        x + y - 2^w & x + y \geq 2^w
+    \end{cases}
+$$
+$$
+    -_w^u x =
+    \begin{cases}
+        x       & x = 0 \\
+        2^w - x & x > 0
+    \end{cases}
+$$
+
+符号数：
+$$
+    x +_w^t y =
+    \begin{cases}
+        x + y - 2^w & 2^{w-1} \leq x + y         \\
+        x + y       & -2^{w-1} < x + y < 2^{w-1} \\
+        x + y + 2^w & x + y \leq -2^{w-1}
+    \end{cases}
+$$
+$$
+    -_w^t x =
+    \begin{cases}
+        TMin_w & x = TMin_w \\
+        - x    & x > Tmin_w
+    \end{cases}
+$$
+\paragraph{乘除法}
+
+无符号数：
+\begin{itemize}
+    \item 乘法
+          $$
+              x *_w^u y = (x \cdot y) mod 2^w
+          $$
+    \item 乘2的幂
+          $$
+              x *_w^u 2^k = x << k
+          $$
+    \item 除以2的幂（逻辑右移，向下舍入）
+          $$
+              x /_w^u 2^k = x >> k
+          $$
+\end{itemize}
+
+
+
+
+符号数：
+\begin{itemize}
+    \item 乘法
+          $$
+              x *_w^t y = U2T_w((x \cdot y) mod 2^w)
+          $$
+    \item 乘2的幂
+          $$
+              x *_w^t 2^k = x << k
+          $$
+    \item 除以2的幂（算术右移，向下舍入）
+          $$
+              x /_w^t 2^k = x >> k
+          $$
+    \item 除以2的幂（算术右移，向上舍入）
+          $$
+              x /_w^t 2^k = (x + (1 << k) - 1) >> k
+          $$
+\end{itemize}
+
+\subsection{浮点数}
+\subsubsection{浮点数表示}
+
+\paragraph{二进制小数}
+$$ b = \sum_{k=-j}^{i} b_k \cdot 2^k $$
+
+\paragraph{IEEE 754标准}
+$$V = (-1)^{s} \cdot M \cdot 2^E$$
+\begin{itemize}
+    \item 符号（sign）：s 表示数值的正负。
+    \item 阶码（exponent）：E 的作用是对浮点数加权，这个权重是 2 的 E 次幂。
+    \item 尾数（mantissa）：M 是一个二进制小数。
+\end{itemize}
+将浮点数的位表示划分为三个字段，分别对这些值进行编码：
+\begin{itemize}
+    \item 一个单独的符号位 s 直接编码符号$s$。
+    \item k 位的阶码字段 $exp=e_{k-1}\ldots e_1e_0$ 编码阶码 E。
+    \item n 位小数字段 $frac=f_{n-1}\ldots f_1f_0$ 编码尾数 M, 但是编码出来的值也依赖于阶码字段的值是否等于 0。
+\end{itemize}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        类型      & 总位数 & 符号位(s) & 阶码位(k) & 尾数位(n) \\
+        \hline
+        单精度(float)  & 32    & 1       & 8       & 23      \\
+        \hline
+        双精度(double) & 64    & 1       & 11      & 52      \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{分类}
+\begin{itemize}
+    \item 规格化的值（Normalized）：阶码字段不全为0，尾数字段有有效数字。
+    $$E=exp - Bias$$
+    $$M=1.f_{n-1}f_{n-2}\ldots f_0$$
+    其中，$Bias = 2^{k-1} - 1$。
+    \item 非规格化的值（Denormalized）：阶码字段全为0，尾数字段有有效数字。
+    $$E = 1 - Bias = - (2^{k-1} - 2)$$
+    $$M = 0.f_{n-1}f_{n-2}\ldots f_0$$
+    \item 无穷大（Infinity）：阶码字段全为1，尾数字段全为0。
+    \item NaN（Not a Number）：阶码字段全为1，尾数字段非全0。
+\end{itemize}
+
+\subsubsection{浮点数运算}
+\paragraph{舍入}
+\begin{itemize}
+    \item 向零舍入
+    \item 向上舍入
+    \item 向下舍入
+    \item 向偶数舍入（默认）
+\end{itemize}
+
+\paragraph{乘法}
+$$ (-1)^{s_1}M_1 2^{E_1} \times (-1)^{s_2}M_2 2^{E_2} $$
+\begin{enumerate}
+    \item 符号计算：结果的符号位为两个操作数符号位的异或。
+    $$s = s_1 \oplus s_2$$
+    \item 阶码相加：将两个操作数的阶码相加。
+    $$E = E_1 + E_2$$
+    \item 尾数相乘：将两个操作数的尾数相乘。
+    $$M = M_1 \times M_2$$
+    \item 规格化：如果结果的尾数不在规范化范围内，则对其进行规格化处理。
+    \item 溢出检查：如果结果的阶码超出表示范围，则将结果设为无穷大。
+    \item 舍入：根据所选的舍入模式对结果进行舍入。
+\end{enumerate}
+
+\paragraph{加法}
+$$ (-1)^{s_1}M_1 2^{E_1} + (-1)^{s_2}M_2 2^{E_2}, E_1 \geq E_2$$
+\begin{enumerate}
+    \item 对阶：将阶码较小的数的尾数右移，直到两个数的阶码相等。
+    \item 尾数相加：根据符号位对尾数进行加减运算。
+    $$M = (-1)^{s_1} M_1 + (-1)^{s_2} M_2 2^{E_2 - E_1}$$
+    \item 规格化：如果结果的尾数不在规范化范围内，则对其进行规格化处理。
+    \item 溢出检查：如果结果的阶码超出表示范围，则将结果设为无穷大。
+    \item 舍入：根据所选的舍入模式对结果进行舍入。
+\end{enumerate}
+
+\subsubsection{浮点数转换}
+\begin{itemize}
+    \item int - float：数字不会溢出，但是可能被舍入。
+    \item int/float - double：数字不会溢出，也不会舍入。
+    \item double - float：可能会溢出，也可能会舍入。
+    \item float/double - int：会向零舍入，可能会溢出。
+\end{itemize}
+
+\newpage
