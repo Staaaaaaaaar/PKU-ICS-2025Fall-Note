@@ -6,41 +6,41 @@
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
-        \multicolumn{4}{|c|}{\textbf{寄存器}} & \multirow{2}{*}{\textbf{备注}} \\
+        \multicolumn{4}{|c|}{\textbf{寄存器}} & \multirow{2}{*}{\textbf{备注}}                                                \\
         \cline{1-4}
-        64位 & 32位 & 16位 & 8位 & \\
+        64位                                & 32位                          & 16位    & 8位     &                            \\
         \hline
-        \%rax & \%eax & \%ax & \%al & 函数返回值(accumulator) \\
+        \%rax                              & \%eax                        & \%ax   & \%al   & 函数返回值(accumulator)         \\
         \hline
-        \%rbx & \%ebx & \%bx & \%bl & 基址寄存器(base)  \\
+        \%rbx                              & \%ebx                        & \%bx   & \%bl   & 基址寄存器(base)                \\
         \hline
-        \%rcx & \%ecx & \%cx & \%cl & 计数器(counter) \\
+        \%rcx                              & \%ecx                        & \%cx   & \%cl   & 计数器(counter)               \\
         \hline
-        \%rdx & \%edx & \%dx & \%dl & 数据寄存器(data)  \\
+        \%rdx                              & \%edx                        & \%dx   & \%dl   & 数据寄存器(data)                \\
         \hline
-        \%rsi & \%esi & \%si & \%sil & 源变址寄存器(source index)  \\
+        \%rsi                              & \%esi                        & \%si   & \%sil  & 源变址寄存器(source index)       \\
         \hline
-        \%rdi & \%edi & \%di & \%dil & 目的变址寄存器(destination index)  \\
+        \%rdi                              & \%edi                        & \%di   & \%dil  & 目的变址寄存器(destination index) \\
         \hline
-        \%rsp & \%esp & \%sp & \%spl & 堆栈指针寄存器(stack pointer) \\
+        \%rsp                              & \%esp                        & \%sp   & \%spl  & 堆栈指针寄存器(stack pointer)     \\
         \hline
-        \%rbp & \%ebp & \%bp & \%bpl & 基址指针寄存器(base pointer) \\
+        \%rbp                              & \%ebp                        & \%bp   & \%bpl  & 基址指针寄存器(base pointer)      \\
         \hline
-        \%r8  & \%r8d & \%r8w & \%r8b & / \\
+        \%r8                               & \%r8d                        & \%r8w  & \%r8b  & /                          \\
         \hline
-        \%r9  & \%r9d & \%r9w & \%r9b & / \\
+        \%r9                               & \%r9d                        & \%r9w  & \%r9b  & /                          \\
         \hline
-        \%r10 & \%r10d & \%r10w & \%r10b & / \\
+        \%r10                              & \%r10d                       & \%r10w & \%r10b & /                          \\
         \hline
-        \%r11 & \%r11d & \%r11w & \%r11b & / \\
+        \%r11                              & \%r11d                       & \%r11w & \%r11b & /                          \\
         \hline
-        \%r12 & \%r12d & \%r12w & \%r12b & / \\
+        \%r12                              & \%r12d                       & \%r12w & \%r12b & /                          \\
         \hline
-        \%r13 & \%r13d & \%r13w & \%r13b & / \\
+        \%r13                              & \%r13d                       & \%r13w & \%r13b & /                          \\
         \hline
-        \%r14 & \%r14d & \%r14w & \%r14b & / \\
+        \%r14                              & \%r14d                       & \%r14w & \%r14b & /                          \\
         \hline
-        \%r15 & \%r15d & \%r15w & \%r15b & / \\
+        \%r15                              & \%r15d                       & \%r15w & \%r15b & /                          \\
         \hline
     \end{tabular}
 \end{table}
@@ -55,13 +55,13 @@
     \centering
     \begin{tabular}{|c|c|c|}
         \hline
-        \textbf{操作数类型} & \textbf{格式} & \textbf{数值} \\
+        \textbf{操作数类型} & \textbf{格式}      & \textbf{数值}                        \\
         \hline
-        寄存器 & $r_a$ & $R[r_a]$ \\
+        寄存器            & $r_a$            & $R[r_a]$                           \\
         \hline
-        立即数 & $\$Imm$ & $Imm$ \\
-        \hline
-        存储器 & $Imm(r_b,r_i,s)$ & $M[Imm + R[r_b] + R[r_i] \cdot s]$ \\
+        立即数            & $\$Imm$          & $Imm$                              \\
+            \hline
+        存储器            & $Imm(r_b,r_i,s)$ & $M[Imm + R[r_b] + R[r_i] \cdot s]$ \\
         \hline
     \end{tabular}
 \end{table}
@@ -72,33 +72,33 @@
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述}                                       \\
         \hline
-        MOV & S, D & $D \leftarrow S$ & 传送 \\
+        MOV                               & S, D        & $D \leftarrow S$               & 传送               \\
         \hline
-        moveb &&& 传送字节 \\
-        movew &&& 传送字 \\
-        movel &&& 传送双字 \\
-        moveq &&& 传送四字 \\
-        moveabsq & I, R & $R \leftarrow I$ & 传送绝对四字 \\
+        moveb                             &             &                                & 传送字节             \\
+        movew                             &             &                                & 传送字              \\
+        movel                             &             &                                & 传送双字             \\
+        moveq                             &             &                                & 传送四字             \\
+        moveabsq                          & I, R        & $R \leftarrow I$               & 传送绝对四字           \\
         \hline
-        MOVZ & S, R & R $\leftarrow$ 零扩展(S) & 以零扩展进行传送 \\
+        MOVZ                              & S, R        & R $\leftarrow$ 零扩展(S)          & 以零扩展进行传送         \\
         \hline
-        movezbw &&& 将做了零扩展的字节传送到字 \\
-        movezbl &&& 将做了零扩展的字节传送到双字 \\
-        movezwl &&& 将做了零扩展的字传送到双字 \\
-        movezbq &&& 将做了零扩展的字节传送到四字 \\
-        movezwq &&& 将做了零扩展的字传送到四字 \\
+        movezbw                           &             &                                & 将做了零扩展的字节传送到字    \\
+        movezbl                           &             &                                & 将做了零扩展的字节传送到双字   \\
+        movezwl                           &             &                                & 将做了零扩展的字传送到双字    \\
+        movezbq                           &             &                                & 将做了零扩展的字节传送到四字   \\
+        movezwq                           &             &                                & 将做了零扩展的字传送到四字    \\
         \hline
-        MOVS & S, R & R $\leftarrow$ 符号扩展(S) & 以符号扩展进行传送 \\
+        MOVS                              & S, R        & R $\leftarrow$ 符号扩展(S)         & 以符号扩展进行传送        \\
         \hline
-        movesbw &&& 将做了符号扩展的字节传送到字 \\
-        movesbl &&& 将做了符号扩展的字节传送到双字 \\
-        moveswl &&& 将做了符号扩展的字传送到双字 \\
-        movesbq &&& 将做了符号扩展的字节传送到四字 \\
-        moveswq &&& 将做了符号扩展的字传送到四字 \\
-        moveslq &&& 将做了符号扩展的双字传送到四字 \\
-        cltq && \%rax $\leftarrow$ 符号扩展(\%eax) & 把\%eax符号扩展到\%rax \\
+        movesbw                           &             &                                & 将做了符号扩展的字节传送到字   \\
+        movesbl                           &             &                                & 将做了符号扩展的字节传送到双字  \\
+        moveswl                           &             &                                & 将做了符号扩展的字传送到双字   \\
+        movesbq                           &             &                                & 将做了符号扩展的字节传送到四字  \\
+        moveswq                           &             &                                & 将做了符号扩展的字传送到四字   \\
+        moveslq                           &             &                                & 将做了符号扩展的双字传送到四字  \\
+        cltq                              &             & \%rax $\leftarrow$ 符号扩展(\%eax) & 把\%eax符号扩展到\%rax \\
         \hline
     \end{tabular}
 \end{table}
@@ -107,13 +107,13 @@
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果}        & \textbf{描述}                                                \\
         \hline
-        \multirow{2}{*}{pushq} & \multirow{2}{*}{S} & $R[\%rsp] \leftarrow R[\%rsp]-8$ &  \multirow{2}{*}{将四字压入栈} \\
-        & & $M[R[\%rsp]] \leftarrow S$ & \\
+        \multirow{2}{*}{pushq}            & \multirow{2}{*}{S} & $R[\%rsp] \leftarrow R[\%rsp]-8$ & \multirow{2}{*}{将四字压入栈} \\
+                                          &                    & $M[R[\%rsp]] \leftarrow S$       &                         \\
         \hline
-        \multirow{2}{*}{popq} & \multirow{2}{*}{D} & $D \leftarrow M[R[\%rsp]]$ &  \multirow{2}{*}{将四字弹出栈} \\
-        & & $R[\%rsp] \leftarrow R[\%rsp]+8$ & \\
+        \multirow{2}{*}{popq}             & \multirow{2}{*}{D} & $D \leftarrow M[R[\%rsp]]$       & \multirow{2}{*}{将四字弹出栈} \\
+                                          &                    & $R[\%rsp] \leftarrow R[\%rsp]+8$ &                         \\
         \hline
     \end{tabular}
 \end{table}
@@ -123,37 +123,37 @@
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果}        & \textbf{描述}                                                           \\
         \hline
-        leaq & S, D & $D \leftarrow \&S$ & 加载有效地址 \\
+        leaq                              & S, D               & $D \leftarrow \&S$                           & 加载有效地址                 \\
         \hline
-        inc & D & $D \leftarrow D + 1$ & 加1 \\
-        dec & D & $D \leftarrow D - 1$ & 减1 \\
-        neg & D & $D \leftarrow -D$ & 取负 \\
-        not & D & $D \leftarrow \sim D$ & 取补 \\
+        inc                               & D                  & $D \leftarrow D + 1$                         & 加1                     \\
+        dec                               & D                  & $D \leftarrow D - 1$                         & 减1                     \\
+        neg                               & D                  & $D \leftarrow -D$                            & 取负                     \\
+        not                               & D                  & $D \leftarrow \sim D$                        & 取补                     \\
         \hline
-        add & S, D & $D \leftarrow D + S$ & 加 \\
-        sub & S, D & $D \leftarrow D - S$ & 减 \\
-        imul & S, D & $D \leftarrow D * S$ & 乘 \\
-        xor & S, D & $D \leftarrow D \oplus S$ & 异或 \\
-        and & S, D & $D \leftarrow D \,\&\, S$ & 与 \\
-        or  & S, D & $D \leftarrow D \,\,|\,\, S$ & 或\\
+        add                               & S, D               & $D \leftarrow D + S$                         & 加                      \\
+        sub                               & S, D               & $D \leftarrow D - S$                         & 减                      \\
+        imul                              & S, D               & $D \leftarrow D * S$                         & 乘                      \\
+        xor                               & S, D               & $D \leftarrow D \oplus S$                    & 异或                     \\
+        and                               & S, D               & $D \leftarrow D \,\&\, S$                    & 与                      \\
+        or                                & S, D               & $D \leftarrow D \,\,|\,\, S$                 & 或                      \\
         \hline
-        sal & k, D & $D \leftarrow D << k$ & 左移 \\
-        shl & k, D & $D \leftarrow D << k$ & 左移 \\
-        sar & k, D & $D \leftarrow D >>_A k$ & 算术右移 \\
-        shr & k, D & $D \leftarrow D >>_L k$ & 逻辑右移 \\
+        sal                               & k, D               & $D \leftarrow D << k$                        & 左移                     \\
+        shl                               & k, D               & $D \leftarrow D << k$                        & 左移                     \\
+        sar                               & k, D               & $D \leftarrow D >>_A k$                      & 算术右移                   \\
+        shr                               & k, D               & $D \leftarrow D >>_L k$                      & 逻辑右移                   \\
         \hline
-        imulq & S & $R[\%rdx]:R[\%rax] \leftarrow S * R[\%rax]$ & 有符号全乘法 \\
-        mulq & S & $R[\%rdx]:R[\%rax] \leftarrow S * R[\%rax]$ & 无符号全乘法 \\
+        imulq                             & S                  & $R[\%rdx]:R[\%rax] \leftarrow S * R[\%rax]$  & 有符号全乘法                 \\
+        mulq                              & S                  & $R[\%rdx]:R[\%rax] \leftarrow S * R[\%rax]$  & 无符号全乘法                 \\
         \hline
-        cqto & & $R[\%rdx:\%rax] \leftarrow$ 符号扩展$(R[\%rax])$ & 转换为八字 \\
+        cqto                              &                    & $R[\%rdx:\%rax] \leftarrow$ 符号扩展$(R[\%rax])$ & 转换为八字                  \\
         \hline
-        \multirow{2}{*}{idivq} &  \multirow{2}{*}{S} & $R[\%rdx] \leftarrow R[\%rdx:\%rax] \mod S$ &  \multirow{2}{*}{有符号除法} \\
-        & & $R[\%rax] \leftarrow R[\%rdx:\%rax] \div S$ & \\
+        \multirow{2}{*}{idivq}            & \multirow{2}{*}{S} & $R[\%rdx] \leftarrow R[\%rdx:\%rax] \mod S$  & \multirow{2}{*}{有符号除法} \\
+                                          &                    & $R[\%rax] \leftarrow R[\%rdx:\%rax] \div S$  &                        \\
         \hline
-        \multirow{2}{*}{divq} &  \multirow{2}{*}{S} & $R[\%rdx] \leftarrow R[\%rdx:\%rax] \mod S$ &  \multirow{2}{*}{无符号除法} \\
-        & & $R[\%rax] \leftarrow R[\%rdx:\%rax] \div S$ & \\
+        \multirow{2}{*}{divq}             & \multirow{2}{*}{S} & $R[\%rdx] \leftarrow R[\%rdx:\%rax] \mod S$  & \multirow{2}{*}{无符号除法} \\
+                                          &                    & $R[\%rax] \leftarrow R[\%rdx:\%rax] \div S$  &                        \\
         \hline
     \end{tabular}
 \end{table}
@@ -165,15 +165,15 @@
     \centering
     \begin{tabular}{|c|c|c|}
         \hline
-        \textbf{标志} & \textbf{描述} & \textbf{含义} \\
+        \textbf{标志} & \textbf{描述}   & \textbf{含义}   \\
         \hline
-        ZF & Zero Flag & 结果为0时置1，否则为0 \\
+        ZF          & Zero Flag     & 结果为0时置1，否则为0  \\
         \hline
-        SF & Sign Flag & 结果为负时置1，否则为0 \\
+        SF          & Sign Flag     & 结果为负时置1，否则为0  \\
         \hline
-        OF & Overflow Flag & 有符号溢出时置1，否则为0 \\
+        OF          & Overflow Flag & 有符号溢出时置1，否则为0 \\
         \hline
-        CF & Carry Flag & 无符号溢出时置1，否则为0 \\
+        CF          & Carry Flag    & 无符号溢出时置1，否则为0 \\
         \hline
     \end{tabular}
 \end{table}
@@ -182,29 +182,29 @@
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{效果}  & \textbf{描述}                                             \\
         \hline
-        CMP & $S_1$, $S_2$ & $S_2-S_1$ & 比较 \\
+        CMP                               & $S_1$, $S_2$ & $S_2-S_1$                                     & 比较      \\
         \hline
-        TEST & $S_1$, $S_2$ & $S_1 \& S_2$ & 测试 \\
+        TEST                              & $S_1$, $S_2$ & $S_1 \& S_2$                                  & 测试      \\
         \hline
-        SET & D & & 设置单字节 \\
+        SET                               & D            &                                               & 设置单字节   \\
         \hline
-        sete/setz & D & $D \leftarrow ZF$ & 相等/零 \\
-        setne/setnz & D & $D \leftarrow \sim ZF$ & 不等/非零 \\
+        sete/setz                         & D            & $D \leftarrow ZF$                             & 相等/零    \\
+        setne/setnz                       & D            & $D \leftarrow \sim ZF$                        & 不等/非零   \\
         \hline
-        sets & D & $D \leftarrow SF$ & 负数 \\
-        setns & D & $D \leftarrow D \sim SF$ & 非负数 \\
+        sets                              & D            & $D \leftarrow SF$                             & 负数      \\
+        setns                             & D            & $D \leftarrow D \sim SF$                      & 非负数     \\
         \hline
-        setg/setnle & D & $D \leftarrow \sim (SF \oplus OF) \& \sim ZF$ & 有符号大于 \\
-        setge/setnl & D & $D \leftarrow \sim (SF \oplus OF)$ & 有符号大于等于 \\
-        setl/setnge & D & $D \leftarrow SF \oplus OF$ & 有符号小于 \\
-        setle/setng & D & $D \leftarrow (SF \oplus OF) | ZF$ & 有符号小于等于 \\
+        setg/setnle                       & D            & $D \leftarrow \sim (SF \oplus OF) \& \sim ZF$ & 有符号大于   \\
+        setge/setnl                       & D            & $D \leftarrow \sim (SF \oplus OF)$            & 有符号大于等于 \\
+        setl/setnge                       & D            & $D \leftarrow SF \oplus OF$                   & 有符号小于   \\
+        setle/setng                       & D            & $D \leftarrow (SF \oplus OF) | ZF$            & 有符号小于等于 \\
         \hline
-        seta/setnbe & D & $D \leftarrow \sim CF \& \sim ZF$ & 无符号大于 \\
-        setae/setnb & D & $D \leftarrow \sim CF$ & 无符号大于等于 \\
-        setb/setnae & D & $D \leftarrow CF$ & 无符号小于 \\
-        setbe/setna & D & $D \leftarrow CF | ZF$ & 无符号小于等于 \\
+        seta/setnbe                       & D            & $D \leftarrow \sim CF \& \sim ZF$             & 无符号大于   \\
+        setae/setnb                       & D            & $D \leftarrow \sim CF$                        & 无符号大于等于 \\
+        setb/setnae                       & D            & $D \leftarrow CF$                             & 无符号小于   \\
+        setbe/setna                       & D            & $D \leftarrow CF | ZF$                        & 无符号小于等于 \\
         \hline
     \end{tabular}
 \end{table}
@@ -214,33 +214,33 @@
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{跳转条件} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{跳转条件} & \textbf{描述}                                \\
         \hline
-        jmp & Label & 1 & 直接跳转 \\
-        jmp & *Operand & 1 & 间接跳转 \\
+        jmp                               & Label         & 1                                & 直接跳转    \\
+        jmp                               & *Operand      & 1                                & 间接跳转    \\
         \hline
-        je/jz & Label & $ZF$ & 相等/零 \\
-        jne/jnz & Label & $\sim ZF$ & 不等/非零 \\
+        je/jz                             & Label         & $ZF$                             & 相等/零    \\
+        jne/jnz                           & Label         & $\sim ZF$                        & 不等/非零   \\
         \hline
-        js & Label & $SF$ & 负数 \\
-        jns & Label & $\sim SF$ & 非负数 \\
+        js                                & Label         & $SF$                             & 负数      \\
+        jns                               & Label         & $\sim SF$                        & 非负数     \\
         \hline
-        jg/jnle & Label & $\sim (SF \oplus OF) \& \sim ZF$ & 有符号大于 \\
-        jge/jnl & Label & $\sim (SF \oplus OF)$ & 有符号大于等于 \\
-        jl/jnge & Label & $SF \oplus OF$ & 有符号小于 \\
-        jle/jng & Label & $(SF \oplus OF) | ZF$ & 有符号小于等于 \\
+        jg/jnle                           & Label         & $\sim (SF \oplus OF) \& \sim ZF$ & 有符号大于   \\
+        jge/jnl                           & Label         & $\sim (SF \oplus OF)$            & 有符号大于等于 \\
+        jl/jnge                           & Label         & $SF \oplus OF$                   & 有符号小于   \\
+        jle/jng                           & Label         & $(SF \oplus OF) | ZF$            & 有符号小于等于 \\
         \hline
-        ja/jnbe & Label & $\sim CF \& \sim ZF$ & 无符号大于 \\
-        jae/jnb & Label & $\sim CF$ & 无符号大于等于 \\
-        jb/jnae & Label & $CF$ & 无符号小于 \\
-        jbe/jna & Label & $CF | ZF$ & 无符号小于等于 \\
+        ja/jnbe                           & Label         & $\sim CF \& \sim ZF$             & 无符号大于   \\
+        jae/jnb                           & Label         & $\sim CF$                        & 无符号大于等于 \\
+        jb/jnae                           & Label         & $CF$                             & 无符号小于   \\
+        jbe/jna                           & Label         & $CF | ZF$                        & 无符号小于等于 \\
         \hline
     \end{tabular}
 \end{table}
 
 \subsubsection{条件分支}
 \paragraph{条件控制}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
 t = ...;  // test-expr
 if (!t)
     goto false;
@@ -252,7 +252,7 @@ done:
     ...
 \end{lstlisting}
 \paragraph{条件传送}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
 t = ...;  // test-expr
 result = ...;  // then-expr
 eval = ...;  // else-expr
@@ -265,23 +265,23 @@ if (!t) result = eval;
     \centering
     \begin{tabular}{|c c|c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{传送条件} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{传送条件} & \textbf{描述}                                \\
         \hline
-        cmove/cmovz & S, R & $ZF$ & 相等/零 \\
-        cmovne/cmovnz & S, R & $\sim ZF$ & 不等/非零 \\
+        cmove/cmovz                       & S, R          & $ZF$                             & 相等/零    \\
+        cmovne/cmovnz                     & S, R          & $\sim ZF$                        & 不等/非零   \\
         \hline
-        cmovs & S, R & $SF$ & 负数 \\
-        cmovns & S, R & $\sim SF$ & 非负数 \\
+        cmovs                             & S, R          & $SF$                             & 负数      \\
+        cmovns                            & S, R          & $\sim SF$                        & 非负数     \\
         \hline
-        cmovg/cmovnle & S, R & $\sim (SF \oplus OF) \& \sim ZF$ & 有符号大于 \\
-        cmovge/cmovnl & S, R & $\sim (SF \oplus OF)$ & 有符号大于等于 \\
-        cmovl/cmovnge & S, R & $SF \oplus OF$ & 有符号小于 \\
-        cmovle/cmovng & S, R & $(SF \oplus OF) | ZF$ & 有符号小于等于 \\
+        cmovg/cmovnle                     & S, R          & $\sim (SF \oplus OF) \& \sim ZF$ & 有符号大于   \\
+        cmovge/cmovnl                     & S, R          & $\sim (SF \oplus OF)$            & 有符号大于等于 \\
+        cmovl/cmovnge                     & S, R          & $SF \oplus OF$                   & 有符号小于   \\
+        cmovle/cmovng                     & S, R          & $(SF \oplus OF) | ZF$            & 有符号小于等于 \\
         \hline
-        cmova/cmovnbe & S, R & $\sim CF \& \sim ZF$ & 无符号大于 \\
-        cmovae/cmovnb & S, R & $\sim CF$ & 无符号大于等于 \\
-        cmovb/cmovnae & S, R & $CF$ & 无符号小于 \\
-        cmovbe/cmovna & S, R & $CF | ZF$ & 无符号小于等于 \\
+        cmova/cmovnbe                     & S, R          & $\sim CF \& \sim ZF$             & 无符号大于   \\
+        cmovae/cmovnb                     & S, R          & $\sim CF$                        & 无符号大于等于 \\
+        cmovb/cmovnae                     & S, R          & $CF$                             & 无符号小于   \\
+        cmovbe/cmovna                     & S, R          & $CF | ZF$                        & 无符号小于等于 \\
         \hline
     \end{tabular}
 \end{table}
@@ -290,7 +290,7 @@ if (!t) result = eval;
 
 \subsubsection{循环}
 \paragraph{do-while循环}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
 loop:
     ...  // body-statement
     t = test-expr;
@@ -298,7 +298,7 @@ loop:
         goto loop;
 \end{lstlisting}
 \paragraph{while循环}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
 /* jump to middle */
     goto test;
 loop:
@@ -308,7 +308,7 @@ test:
     if (t)
         goto loop;
 \end{lstlisting}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
 /* guarded-do */
 t = test-expr;
 if (!t)
@@ -322,7 +322,7 @@ done:
     ...
 \end{lstlisting}
 \paragraph{for循环}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
     init-expr;
     goto test;
 loop:
@@ -333,7 +333,7 @@ test:
     if (t)
         goto loop;
 \end{lstlisting}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[style=CStyle]
     init-expr;
     t = test-expr;
     if (!t)
@@ -350,30 +350,30 @@ done:
 
 \subsubsection{switch语句}
 switch语句可以根据一个整数索引值进行多重分支，通过使用跳转表这种数据结构使得实现更加高效。
-\begin{lstlisting}[language={[x86masm]Assembler}]
-    cmpl    $0, %rdi               # if index < 0 -> default
+\begin{lstlisting}[style=ASMStyle]
+    cmpl    $0, %rdi               ; if index < 0 -> default
     jl      .Ldefault
-    cmpl    $2, %rdi               # if index > 2 -> default
+    cmpl    $2, %rdi               ; if index > 2 -> default
     jg      .Ldefault
-    jmp     *.Ljumptable(,%rdi,8)  # indirect jump via table
+    jmp     *.Ljumptable(,%rdi,8)  ; indirect jump via table
 .Lcase0:
-    # Case 0 actions
-    # ...
+    ; Case 0 actions
+    ; ...
     jmp .Ldone
 .Lcase1:
-    # Case 1 actions
-    # ...
+    ; Case 1 actions
+    ; ...
     jmp .Ldone
 .Lcase2:
-    # Case 2 actions
-    # ...
+    ; Case 2 actions
+    ; ...
     jmp .Ldone
 .Ldefault:
-    # Default actions
-    # ...
+    ; Default actions
+    ; ...
     jmp .Ldone
 .Ldone:
-    # ...
+    ; ...
 
     .section .rodata
     .align 8
@@ -397,8 +397,8 @@ switch语句可以根据一个整数索引值进行多重分支，通过使用�
 
 \subsubsection{运行时栈}
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.4\textwidth]{stack-structure.png}
+    \centering
+    \includegraphics[width=0.4\textwidth]{stack-structure.png}
 \end{figure}
 
 \subsubsection{转移控制}
@@ -410,12 +410,12 @@ switch语句可以根据一个整数索引值进行多重分支，通过使用�
     \centering
     \begin{tabular}{|c c|c|}
         \hline
-        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述} \\
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述}            \\
         \hline
-        call & Label & 过程调用 \\
-        call & *Operand & 过程调用 \\
+        call                              & Label       & 过程调用     \\
+        call                              & *Operand    & 过程调用     \\
         \hline
-        ret &  & 从过程调用中返回 \\
+        ret                               &             & 从过程调用中返回 \\
         \hline
     \end{tabular}
 \end{table}
@@ -431,17 +431,17 @@ x86-64中，可以通过寄存器最多传递6个整型（例如整数和指针�
     \centering
     \begin{tabular}{|c|c|c|c|c|c|c|}
         \hline
-        \multirow{2}{*}{\textbf{操作数大小（位）}} & \multicolumn{6}{c|}{\textbf{参数数量}} \\
+        \multirow{2}{*}{\textbf{操作数大小（位）}} & \multicolumn{6}{c|}{\textbf{参数数量}}                                         \\
         \cline{2-7}
-        & 1 & 2 & 3 & 4 & 5 & 6 \\
+                                           & 1                                  & 2     & 3     & 4     & 5     & 6     \\
         \hline
-        64 & \%rdi & \%rsi & \%rdx & \%rcx & \%r8 & \%r9 \\
+        64                                 & \%rdi                              & \%rsi & \%rdx & \%rcx & \%r8  & \%r9  \\
         \hline
-        32 & \%edi & \%esi & \%edx & \%ecx & \%r8d & \%r9d \\
+        32                                 & \%edi                              & \%esi & \%edx & \%ecx & \%r8d & \%r9d \\
         \hline
-        16 & \%di & \%si & \%dx & \%cx & \%r8w & \%r9w \\
+        16                                 & \%di                               & \%si  & \%dx  & \%cx  & \%r8w & \%r9w \\
         \hline
-        8 & \%dil & \%sil & \%dl & \%cl & \%r8b & \%r9b \\
+        8                                  & \%dil                              & \%sil & \%dl  & \%cl  & \%r8b & \%r9b \\
         \hline
     \end{tabular}
 \end{table}
@@ -466,5 +466,233 @@ x86-64中，可以通过寄存器最多传递6个整型（例如整数和指针�
 所有其他的寄存器，除了栈指针rsp，都分类为\emph{调用者保存寄存器}。
 
 \subsection{数据结构}
+\subsubsection{数组}
+对于数据类型T和整型常数N，数组声明如下：
+\begin{lstlisting}[style=CStyle]
+    T A[N];
+\end{lstlisting}
+
+它在内存中分配一个$L\cdot N$字节的连续区域，这里$L$是数据类型$T$的大小（单位为字节）。并且，它引入了标识符$A$，可以用$A$来
+作为指向数组开头的指针，这个指针的值就是$x_A$。可以用 $0 \sim N-1$ 的整数索引来访问该数
+组元素。数组元素$i$会被存放在地址为$X_A+L \cdot i$的地方。
+
+\paragraph{指针运算}
+
+C语言允许对指针进行运算，而计算出来的值会根据该指针引用的数据类型的大小进
+行伸缩。也就是说，如果$p$是一个指向类型为$T$的数据的指针，$p$的值为$x_p$，那么表达式
+$p+i$的值为$x_p+L\cdot i$，这里$L$是数据类型$T$的大小。
+
+\paragraph{多维数组}
+以二维数组为例，声明如下：
+\begin{lstlisting}[style=CStyle]
+    T D[R][C];
+\end{lstlisting}
+
+其元素$D[i][j]$的内存地址为
+$$\&D[i][j] = x_D + L \cdot (C \cdot i + j)$$
+
+这里$L$是数据类型$T$的大小，$x_D$是数组$D$的起始地址。
+
+\paragraph{定长数组}
+C语言编译器能够优化定长多维数组上的操作代码。
+\begin{lstlisting}[style=CStyle]
+/* Get element a[i][j] */
+int fix_ele(fix_matrix a, size_t i, size_t j) {
+    return a[i][j];
+}
+\end{lstlisting}
+\begin{lstlisting}[style=ASMStyle]
+; a in %rdi, i in %rsi, j in %rdx
+salq    $6, %rsi             ; %rsi = i * 64
+addq    %rsi, %rdi           ; %rdi = a + 64*i
+movl    (%rdi,%rdx,4), %eax  ; %eax = M[a + 64*i + 4*j]
+ret
+\end{lstlisting}
+\paragraph{变长数组}
+历史上，C语言只支持大小在编译时就能确定的多维数组，直到ISO C99引入了一种功能，允许数组的维度是表达式，在数组被分配的时候才计算出来。
+\begin{lstlisting}[style=CStyle]
+/* Get element a[i][j] */
+int var_ele(size_t n, int a[n][n], size_t i, size_t j) {
+    return a[i][j];
+}
+\end{lstlisting}
+\begin{lstlisting}[style=ASMStyle]
+; n in %rdi, a in %rsi, i in %rdx, j in %rcx
+imulq   %rdx, %rdi           ; n*i
+leaq    (%rsi,%rdi,4), %rax  ; a + 4*n*i
+movl    (%rax,%rcx,4), %eax  ; a + 4*n*i + 4*j
+ret
+\end{lstlisting}
+\subsubsection{结构}
+C语言的struct声明创建一个数据类型，将可能不同类型的对象聚合到一个对象中，用名字来引用结构的各个组成部分。
+结构的所有组成部分都存放在内存中一段连续的区域内，而指向结构的指针就是结构第一个字节的地址。
+
+编译器维护关于每个结构类型的信息，指示每个字段的字节偏移。
+它以这些偏移作为内存引用指令中的位移，从而产生对结构元素的引用。
+\begin{lstlisting}[style=CStyle]
+struct rec {
+    int i;
+    int j;
+    int a[2];
+    int *p;
+};
+\end{lstlisting}
+
+这个结构包括4个字段：两个4字节int，一个由两个类型为int的元素组成的数组和一个8字节整型指针，总共是24个字节。
+
+\paragraph{数据对齐}
+许多计算机系统对基本数据类型的合法地址做出了一些限制，要求某种类型对象的地址必须是某个值K（通常是2、4或8）的倍数。
+这种对齐限制简化了形成处理器和内存系统之间接口的硬件设计。
+
+对齐原则是任何K字节的基本对象的地址必须是K的倍数。
+
+\subsubsection{联合}
+
+\subsubsection{浮点数}
+在AVX浮点体系结构中，允许数据存储在16个YMM寄存器中，它们的名字为\%ymm0-\%ymm15。每个YMM寄存器都是256位（32字节）。
+汇编代码用寄存器的SSE XMM寄存器名字\%xmm0-\%xmm15来引用它们，每个XMM寄存器都是对应的YMM寄存器的低128位（16字节）。
+\paragraph{传送指令}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述}                 \\
+        \hline
+        vmovss                            & M$_{32}$, X & 传送单精度数        \\
+        \hline
+        vmovss                            & X, M$_{32}$ & 传送单精度数        \\
+        \hline
+        vmovsd                            & M$_{64}$, X & 传送双精度数        \\
+        \hline
+        vmovsd                            & X, M$_{64}$ & 传送双精度数        \\
+        \hline
+        vmovaps                           & X, X        & 传送对齐的封装好的单精度数 \\
+        \hline
+        vmovapd                           & X, X        & 传送对齐的封装好的双精度数 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{转换指令}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述}                               \\
+        \hline
+        vcvttss2si                        & X/M$_{32}$, R$_{32}$ & 用截断的方法把单精度数转换成整数   \\
+        \hline
+        vcvttsd2si                        & X/M$_{64}$, R$_{32}$ & 用截断的方法把双精度数转换成整数   \\
+        \hline
+        vcvttsd2si                        & X/M$_{64}$, R$_{32}$ & 用截断的方法把双精度数转换成整数   \\
+        \hline
+        vcvttss2siq                       & X/M$_{32}$, R$_{64}$ & 用截断的方法把单精度数转换成四字整数 \\
+        \hline
+        vcvttsd2siq                       & X/M$_{64}$, R$_{64}$ & 用截断的方法把双精度数转换成四字整数 \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述}                            \\
+        \hline
+        vcvtssi2ss                        & M$_{32}$/R$_{32}$, X, X & 把整数转换成单精度数   \\
+        \hline
+        vcvtssi2sd                        & M$_{32}$/R$_{32}$, X, X & 把整数转换成双精度数   \\
+        \hline
+        vcvtssi2ssq                       & M$_{64}$/R$_{64}$, X, X & 把四字整数转换成单精度数 \\
+        \hline
+        vcvtssi2sdq                       & M$_{64}$/R$_{64}$, X, X & 把四字整数转换成双精度数 \\
+        \hline
+    \end{tabular}
+\end{table}
+\paragraph{运算指令}
+每条指令有一个（$S_1$）或两个（$S_1$, $S_2$）源操作数，和一个目的操作数$D$。第一个源操作数$S_1$可以是一个XMM寄存器
+或一个内存位置，第二个源操作数和目的操作数都必须是XMM寄存器。
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \multicolumn{4}{|c|}{\textbf{指令}} & \textbf{效果} & \textbf{描述}                                                   \\
+        \hline
+        vaddss                            & vaddsd      & vaddps      & vaddpd & $D \leftarrow S_2 + S_1$      & 浮点数加   \\
+        \hline
+        vsubss                            & vsubsd      & vsubps      & vsubpd & $D \leftarrow S_2 - S_1$      & 浮点数减   \\
+        \hline
+        vmulss                            & vmulsd      & vmulps      & vmulpd & $D \leftarrow S_2 \times S_1$ & 浮点数乘   \\
+        \hline
+        vdivss                            & vdivsd      & vdivps      & vdivpd & $D \leftarrow S_2 / S_1$      & 浮点数除   \\
+        \hline
+        vmaxss                            & vmaxsd      & vmaxps      & vmaxpd & $D \leftarrow \max(S_2, S_1)$ & 浮点数最大值 \\
+        \hline
+        vminss                            & vminsd      & vminps      & vminpd & $D \leftarrow \min(S_2, S_1)$ & 浮点数最小值 \\
+        \hline
+        sqrtss                            & sqrtsd      & sqrtps      & sqrtpd & $D \leftarrow \sqrt{S_1}$     & 浮点数平方根 \\
+        \hline
+        vxorss                            & vxorsd      & vxorps      & vxorpd & $D \leftarrow S_2 \oplus S_1$ & 位级异或   \\
+        \hline
+        vandss                            & vandsd      & vandps      & vandpd & $D \leftarrow S_2 \& S_1$     & 位级与    \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{比较指令}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述}          \\
+        \hline
+        ucomiss                           & $S_1, S_2$  & 比较单精度值 \\
+        \hline
+        ucomisd                           & $S_1, S_2$  & 比较双精度值 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+浮点比较指令会设置三个条件码：零标志位ZF、进位标志位CF和奇偶标志位PF。对于整数
+操作，当最近的一次算术或逻辑运算产生的值的最低位字节是偶校验的（即这个字节中有
+偶数个1），就会设置PF标志位。不过对于浮点比较，当两个操作数中任一个是
+NaN时，会设置该位。
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        顺序 $S_2:S_1$ & CF & ZF & PF \\
+        \hline
+        无序的          & 1  & 1  & 1  \\
+        \hline
+        $S_2 < S_1$  & 1  & 0  & 0  \\
+        \hline
+        $S_2 = S_1$  & 0  & 1  & 0  \\
+        \hline
+        $S_2 > S_1$  & 0  & 0  & 0  \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{机器级程序进阶}
+\subsubsection{类型声明}
+
+右左法则：首先从标识符看起，然后往右看，再往左看。每当遇到圆括号时，就应该掉转阅读方向。一旦解析完圆括号里面所有的东西，就跳出圆括号。重复这个过程直到整个声明解析完毕。
+\begin{lstlisting}[style=CStyle]
+int * (* (*a) (int) ) [10];
+/*
+阅读步骤：
+1. 从变量名开始：a
+2. 往右看，什么也没有，碰到了')'，因此往左看，碰到一个'*'：一个指针
+3. 跳出括号，碰到了(int)：一个带一个int参数的函数
+4. 向左看，发现一个'*'：（函数）返回一个指针
+5. 跳出括号，向右看，碰到[10]：一个10元素的数组
+6. 向左看，发现一个'*'：指针
+7. 向左看，发现int：int类型
+总结：a被声明成为一个函数的指针,该函数返回指向指针数组的指针
+*/
+\end{lstlisting}
+
+
 
 \newpage
