@@ -80,11 +80,11 @@
 \definecolor{codekeyword}{RGB}{0,0,180}       % 关键字
 \definecolor{codecomment}{RGB}{100,120,100}   % 注释
 \definecolor{codestring}{RGB}{163,21,21}      % 字符串
-\definecolor{codereg}{RGB}{128,0,128}         % 寄存器 / 强调
+\definecolor{codeemph}{RGB}{128,0,128}        % 强调
 \lstset{
     % 基础字体与布局
-    basicstyle=\ttfamily\small, % 统一行距+等宽
-    backgroundcolor=\color{codebg},             % 背景色
+    basicstyle=\ttfamily\small,               % 字体
+    backgroundcolor=\color{codebg},           % 背景色
     frame=single,
     rulecolor=\color{codeframe},
     columns=fullflexible,
@@ -103,25 +103,22 @@
     stringstyle=\color{codestring},
     % 额外
     captionpos=b,
-    escapeinside={(*@}{@*)}, % 在代码中嵌入 LaTeX：(*@  LaTeX  @*)
+    escapeinside={(*@}{@*)},                  % 在代码中嵌入 LaTeX：(*@  LaTeX  @*)
     inputencoding=utf8,
     extendedchars=true
 }
-% C语言增强风格
+% C语言风格
 \lstdefinestyle{CStyle}{
     language=C,
     morekeywords={inline,__inline,__attribute__,constexpr,decltype,nullptr,
-      size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t},
-    basicstyle=\ttfamily\small,
-    keywordstyle=\bfseries\color{codekeyword},
-    commentstyle=\itshape\color{codecomment},
-    stringstyle=\color{codestring},
-    numbers=left,
-    numberstyle=\scriptsize\color{gray},
-    showstringspaces=false
+      size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t}
 }
-% 定义简单汇编语言（ASM）
-\lstdefinelanguage{ASM}{
+% 汇编语言风格
+\lstdefinestyle{ASMStyle}{
+    language={[x86masm]Assembler},
+    keywordstyle=\bfseries\color{purple},
+    emph={eax,ebx,ecx,edx,esi,edi,esp,ebp,rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15},
+    emphstyle=\color{codeemph},
     morekeywords={
       mov,movb,movw,movl,movq,movsb,movsw,movsl,movsq,movzx,movsx,movabs,
       add,addb,addw,addl,addq,adc,adcb,adcw,adcl,adcq,
@@ -147,23 +144,7 @@
       pxor,pand,por,psllw,psrlw,pslld,psrld,pslldq,psrldq,psadbw,
       fld,fstp,fst,fstcw,fninit,fwait,
       emms,mmx,fxsave,fxrstor
-    },
-    sensitive=true,
-    morecomment=[l]{;},
-    morestring=[b]"
-}
-% 汇编风格
-\lstdefinestyle{ASMStyle}{
-    language=ASM,
-    basicstyle=\ttfamily\small,
-    keywordstyle=\bfseries\color{purple},
-    commentstyle=\itshape\color{codecomment},
-    stringstyle=\color{codestring},
-    emph={eax,ebx,ecx,edx,esi,edi,esp,ebp,rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15},
-    emphstyle=\color{codereg},
-    numbers=left,
-    numberstyle=\scriptsize\color{gray},
-    showstringspaces=false
+    }
 }
 
 % 设置自定义样式的定理框
