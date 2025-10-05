@@ -25,12 +25,6 @@
 % 设置图片目录
 \graphicspath{{Figures/}}
 
-\definecolor{blackk}{HTML}{0d0d0d}
-\definecolor{cyan}{rgb}{0.0, 1.0, 1.0}          % 青色
-\definecolor{lightblue}{rgb}{0.68, 0.85, 0.9}   % 浅蓝色
-\definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}     % 墨绿色
-\definecolor{brownyellow}{rgb}{0.76, 0.60, 0.42} % 棕黄色
-
 % 页面布局设置
 \geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
 \setlength{\headheight}{14.5pt}
@@ -43,20 +37,26 @@
 % }
 
 % 自定义标题样式
+\definecolor{sectioncolor}{RGB}{44, 102, 203}
+\definecolor{subsectioncolor}{RGB}{0, 128, 128}
+\definecolor{subsubsectioncolor}{RGB}{70, 130, 180}
+\definecolor{paragraphcolor}{RGB}{105, 105, 105}
+
+% 一级标题
 \titleformat{\section}
-{\normalfont\Large\bfseries\color{black}}    % 一级标题青色
+{\normalfont\Large\bfseries\color{sectioncolor}}
 {\thesection}{1em}{}
-
+% 二级标题
 \titleformat{\subsection}
-{\normalfont\large\bfseries\color{cyan}} % 二级标题浅蓝色
+{\normalfont\large\bfseries\color{subsectioncolor}}
 {\thesubsection}{1em}{}
-
+% 三级标题
 \titleformat{\subsubsection}
-{\normalfont\normalsize\bfseries\color{lightblue}} % 三级标题墨绿色
+{\normalfont\normalsize\bfseries\color{subsubsectioncolor}}
 {\thesubsubsection}{1em}{}
-
+% 四级标题
 \titleformat{\paragraph}
-{\normalfont\normalsize\bfseries\color{darkgreen}} % 四级标题棕黄色
+{\normalfont\normalsize\bfseries\color{paragraphcolor}}
 {\theparagraph}{1em}{}
 
 % 修改目录的字体颜色为黑色
