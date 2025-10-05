@@ -1,6 +1,7 @@
 # LaTeX intermediate and output files
 *.aux
 *.bbl
+*.bbl-SAVE-ERROR
 *.bcf
 *.blg
 *.fls
