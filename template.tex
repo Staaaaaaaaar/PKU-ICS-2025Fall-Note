@@ -19,7 +19,7 @@
 \usepackage{float}
 
 % 文献引用
-\usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}  
+\usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}
 \addbibresource{references.bib}  % 引入 references.bib 文件
 
 % 设置图片目录
@@ -44,28 +44,28 @@
 
 % 自定义标题样式
 \titleformat{\section}
-  {\normalfont\Large\bfseries\color{black}}    % 一级标题青色
-  {\thesection}{1em}{}
+{\normalfont\Large\bfseries\color{black}}    % 一级标题青色
+{\thesection}{1em}{}
 
 \titleformat{\subsection}
-  {\normalfont\large\bfseries\color{cyan}} % 二级标题浅蓝色
-  {\thesubsection}{1em}{}
+{\normalfont\large\bfseries\color{cyan}} % 二级标题浅蓝色
+{\thesubsection}{1em}{}
 
 \titleformat{\subsubsection}
-  {\normalfont\normalsize\bfseries\color{lightblue}} % 三级标题墨绿色
-  {\thesubsubsection}{1em}{}
+{\normalfont\normalsize\bfseries\color{lightblue}} % 三级标题墨绿色
+{\thesubsubsection}{1em}{}
 
 \titleformat{\paragraph}
-  {\normalfont\normalsize\bfseries\color{darkgreen}} % 四级标题棕黄色
-  {\theparagraph}{1em}{}
+{\normalfont\normalsize\bfseries\color{darkgreen}} % 四级标题棕黄色
+{\theparagraph}{1em}{}
 
 % 修改目录的字体颜色为黑色
 \hypersetup{
-    colorlinks=true,
-    linkcolor=black,  % 将目录超链接设置为黑色
-    urlcolor=magenta,
-    citecolor=black,
-    pdfborder={0 0 0}
+  colorlinks=true,
+  linkcolor=black,  % 将目录超链接设置为黑色
+  urlcolor=magenta,
+  citecolor=black,
+  pdfborder={0 0 0}
 }
 
 % 页眉页脚设置
@@ -73,6 +73,13 @@
 \fancyhf{}
 \fancyhead[L]{\leftmark}
 \fancyhead[R]{\thepage}
+
+% 重定义 plain 样式（用于统一目录页）
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyhead[L]{\leftmark}
+  \fancyhead[R]{\thepage}
+}
 
 % 代码设置
 \definecolor{codebg}{RGB}{248,248,248}        % 代码背景
@@ -82,44 +89,44 @@
 \definecolor{codestring}{RGB}{163,21,21}      % 字符串
 \definecolor{codeemph}{RGB}{128,0,128}        % 强调
 \lstset{
-    % 基础字体与布局
-    basicstyle=\ttfamily\small,               % 字体
-    backgroundcolor=\color{codebg},           % 背景色
-    frame=single,
-    rulecolor=\color{codeframe},
-    columns=fullflexible,
-    keepspaces=true,
-    showstringspaces=false,
-    tabsize=4,
-    breaklines=true,
-    breakatwhitespace=true,
-    % 行号
-    numbers=left,
-    numberstyle=\scriptsize\color{gray},
-    numbersep=8pt,
-    % 配色
-    keywordstyle=\bfseries\color{codekeyword},
-    commentstyle=\color{codecomment},
-    stringstyle=\color{codestring},
-    % 额外
-    captionpos=b,
-    escapeinside={(*@}{@*)},                  % 在代码中嵌入 LaTeX：(*@  LaTeX  @*)
-    inputencoding=utf8,
-    extendedchars=true
+  % 基础字体与布局
+  basicstyle=\ttfamily\small,               % 字体
+  backgroundcolor=\color{codebg},           % 背景色
+  frame=single,
+  rulecolor=\color{codeframe},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  breaklines=true,
+  breakatwhitespace=true,
+  % 行号
+  numbers=left,
+  numberstyle=\scriptsize\color{gray},
+  numbersep=8pt,
+  % 配色
+  keywordstyle=\bfseries\color{codekeyword},
+  commentstyle=\color{codecomment},
+  stringstyle=\color{codestring},
+  % 额外
+  captionpos=b,
+  escapeinside={(*@}{@*)},                  % 在代码中嵌入 LaTeX：(*@  LaTeX  @*)
+  inputencoding=utf8,
+  extendedchars=true
 }
 % C语言风格
 \lstdefinestyle{CStyle}{
-    language=C,
-    morekeywords={inline,__inline,__attribute__,constexpr,decltype,nullptr,
+  language=C,
+  morekeywords={inline,__inline,__attribute__,constexpr,decltype,nullptr,
       size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t}
 }
 % 汇编语言风格
 \lstdefinestyle{ASMStyle}{
-    language={[x86masm]Assembler},
-    keywordstyle=\bfseries\color{purple},
-    emph={eax,ebx,ecx,edx,esi,edi,esp,ebp,rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15},
-    emphstyle=\color{codeemph},
-    morekeywords={
+  language={[x86masm]Assembler},
+  keywordstyle=\bfseries\color{purple},
+  emph={eax,ebx,ecx,edx,esi,edi,esp,ebp,rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15},
+  emphstyle=\color{codeemph},
+  morekeywords={
       mov,movb,movw,movl,movq,movsb,movsw,movsl,movsq,movzx,movsx,movabs,
       add,addb,addw,addl,addq,adc,adcb,adcw,adcl,adcq,
       sub,subb,subw,subl,subq,sbb,sbbb,sbbw,sbbl,sbbq,
@@ -151,15 +158,15 @@
 \tcbuselibrary{theorems}
 % 定义定理的样式
 \newtcolorbox{dl}[1][]{colback=red!5!white,colframe=red!75!black,
-    fonttitle=\bfseries,title=定理, #1}
+  fonttitle=\bfseries,title=定理, #1}
 
 % 定义定义的样式
 \newtcolorbox{dy}[1][]{colback=green!5!white,colframe=green!75!black,
-    fonttitle=\bfseries,title=定义, #1}
+  fonttitle=\bfseries,title=定义, #1}
 
 % 定义公式的样式
 \newtcolorbox{gs}[1][]{colback=blue!5!white,colframe=blue!75!black,
-    fonttitle=\bfseries,title=公式, #1}
+  fonttitle=\bfseries,title=公式, #1}
 
 % 定义旁注的样式，支持传入参数作为标题
 \newtcolorbox{sidenote}[2][]{title=#2, #1}
