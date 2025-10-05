@@ -1,4 +1,5 @@
 % 引入必要的包
+% \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb, amsfonts,amsthm}
 \usepackage{graphicx}
 \usepackage{geometry}
@@ -18,10 +19,8 @@
 \usepackage{float}
 
 % 文献引用
-\usepackage[utf8]{inputenc}
 \usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}  
 \addbibresource{references.bib}  % 引入 references.bib 文件
-\hypersetup{colorlinks=true, linkcolor=black, urlcolor=black, citecolor=black}
 
 % 设置图片目录
 \graphicspath{{Figures/}}
@@ -75,16 +74,96 @@
 \fancyhead[L]{\leftmark}
 \fancyhead[R]{\thepage}
 
-% \fancyfoot[R]{\href{https://github.com/hanlife02}{\faGithub\ Ethan}}
-
-% 代码高亮设置
+% 代码设置
+\definecolor{codebg}{RGB}{248,248,248}        % 代码背景
+\definecolor{codeframe}{RGB}{220,220,220}     % 边框颜色
+\definecolor{codekeyword}{RGB}{0,0,180}       % 关键字
+\definecolor{codecomment}{RGB}{100,120,100}   % 注释
+\definecolor{codestring}{RGB}{163,21,21}      % 字符串
+\definecolor{codereg}{RGB}{128,0,128}         % 寄存器 / 强调
 \lstset{
-    basicstyle=\ttfamily\footnotesize,
-    keywordstyle=\color{blue},
-    commentstyle=\color{gray},
-    stringstyle=\color{red},
+    % 基础字体与布局
+    basicstyle=\ttfamily\small, % 统一行距+等宽
+    backgroundcolor=\color{codebg},             % 背景色
     frame=single,
-    breaklines=true
+    rulecolor=\color{codeframe},
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    tabsize=4,
+    breaklines=true,
+    breakatwhitespace=true,
+    % 行号
+    numbers=left,
+    numberstyle=\scriptsize\color{gray},
+    numbersep=8pt,
+    % 配色
+    keywordstyle=\bfseries\color{codekeyword},
+    commentstyle=\itshape\color{codecomment},
+    stringstyle=\color{codestring},
+    % 额外
+    captionpos=b,
+    escapeinside={(*@}{@*)}, % 在代码中嵌入 LaTeX：(*@  LaTeX  @*)
+    inputencoding=utf8,
+    extendedchars=true
+}
+% C语言增强风格
+\lstdefinestyle{CStyle}{
+    language=C,
+    morekeywords={inline,__inline,__attribute__,constexpr,decltype,nullptr,
+      size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\bfseries\color{codekeyword},
+    commentstyle=\itshape\color{codecomment},
+    stringstyle=\color{codestring},
+    numbers=left,
+    numberstyle=\scriptsize\color{gray},
+    showstringspaces=false
+}
+% 定义简单汇编语言（ASM）
+\lstdefinelanguage{ASM}{
+    morekeywords={
+      mov,movb,movw,movl,movq,movsb,movsw,movsl,movsq,movzx,movsx,movabs,
+      add,addb,addw,addl,addq,adc,adcb,adcw,adcl,adcq,
+      sub,subb,subw,subl,subq,sbb,sbbb,sbbw,sbbl,sbbq,
+      imul,imulb,imulw,imull,imulq,
+      mul,mulb,mulw,mull,mulq,div,divb,divw,divl,divq,idiv,idivb,idivw,idivl,idivq,
+      inc,incb,incw,incl,incq,dec,decb,decw,decl,decq,
+      xor,xorb,xorw,xorl,xorq,and,andb,andw,andl,andq,or,orb,orw,orl,orq,not,neg,
+      shl,shlb,shlw,shll,shlq,sal,salb,salw,sall,salq,
+      shr,shrb,shrw,shrl,shrq,sar,sarb,sarw,sarl,sarq,
+      rol,rolb,rolw,roll,rolq,ror,rorb,rorw,rorl,rorq,
+      lea,lea32,lea64,
+      push,pushb,pushw,pushl,pushq,pop,popb,popw,popl,popq,
+      call,ret,retq,int,int3,iret,iretq,syscall,sysenter,sysexit,sysret,sysretq,
+      cmp,cmpb,cmpw,cmpl,cmpq,test,testb,testw,testl,testq,
+      jmp,je,jne,jz,jnz,ja,jae,jb,jbe,jl,jle,jg,jge,jnc,jc,jo,jno,js,jns,jp,jnp,
+      nop,hlt,
+      section,global,extern,org,align,db,dw,dd,dq,byte,word,dword,qword,
+      pushf,popf,pusha,popa,cld,std,stc,clc,sti,cli,rep,repz,repe,repne,repnz,
+      cmova,cmovb,cmovc,cmovg,cmovl,cmovge,cmovle,cmovbe,cmovnb,cmovns,cmovnz,cmovo,
+      setb,setbe,setl,setle,setg,setge,setnz,setz,sets,setns,seto,
+      bt,bts,btr,btc,bsf,bsr,bswap,
+      pxor,pand,por,psllw,psrlw,pslld,psrld,pslldq,psrldq,psadbw,
+      fld,fstp,fst,fstcw,fninit,fwait,
+      emms,mmx,fxsave,fxrstor
+    },
+    sensitive=true,
+    morecomment=[l]{;},
+    morestring=[b]"
+}
+% 汇编风格
+\lstdefinestyle{ASMStyle}{
+    language=ASM,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\bfseries\color{purple},
+    commentstyle=\itshape\color{codecomment},
+    stringstyle=\color{codestring},
+    emph={eax,ebx,ecx,edx,esi,edi,esp,ebp,rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15},
+    emphstyle=\color{codereg},
+    numbers=left,
+    numberstyle=\scriptsize\color{gray},
+    showstringspaces=false
 }
 
 % 设置自定义样式的定理框
@@ -103,4 +182,5 @@
 
 % 定义旁注的样式，支持传入参数作为标题
 \newtcolorbox{sidenote}[2][]{title=#2, #1}
+
 
