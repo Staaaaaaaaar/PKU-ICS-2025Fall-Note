@@ -386,7 +386,84 @@ switch语句可以根据一个整数索引值进行多重分支，通过使用�
 
 \subsection{过程}
 
+过程是软件中一种很重要的抽象。它提供了一种封装代码的方式，用一组指定的参数和一个可选的返回值实现了某种功能。
+假设过程P调用过程Q，Q执行后返回到P。这些动作包括下面一个或多个机制：
 
+\begin{itemize}
+    \item 传递控制：在进入过程Q的时候，程序计数器必须被设置为Q的代码的起始地址，然后在返回时，要把程序计数器设置为P中调用Q后面那条指令的地址。
+    \item 传递数据：P必须能够向Q提供一个或多个参数，Q必须能够向P返回一个值。
+    \item 分配和释放内存：在开始时，Q可能需要为局部变量分配空间，而在返回前，又必须释放这些存储空间。
+\end{itemize}
+
+\subsubsection{运行时栈}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\textwidth]{stack-structure.png}
+\end{figure}
+
+\subsubsection{转移控制}
+
+将控制从函数P转移到函数Q只需要简单地把程序计数器设置为Q的代码的起始位置。
+不过，当稍后从Q返回的时候，处理器必须记录好它需要继续P的执行的代码位置。
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{指令}} & \textbf{描述} \\
+        \hline
+        call & Label & 过程调用 \\
+        call & *Operand & 过程调用 \\
+        \hline
+        ret &  & 从过程调用中返回 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{数据传送}
+
+当调用一个过程时，除了要把控制传递给它并在过程返回时再传递回来之外，过程调用还可能包括把数据作为参数传递。
+x86-64中，可以通过寄存器最多传递6个整型（例如整数和指针）参数，大部分过程间的数据传送是通过寄存器实现的。
+
+寄存器的使用是有特殊顺序的，寄存器使用的名字取决于要传递的数据类型的大小。
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{\textbf{操作数大小（位）}} & \multicolumn{6}{c|}{\textbf{参数数量}} \\
+        \cline{2-7}
+        & 1 & 2 & 3 & 4 & 5 & 6 \\
+        \hline
+        64 & \%rdi & \%rsi & \%rdx & \%rcx & \%r8 & \%r9 \\
+        \hline
+        32 & \%edi & \%esi & \%edx & \%ecx & \%r8d & \%r9d \\
+        \hline
+        16 & \%di & \%si & \%dx & \%cx & \%r8w & \%r9w \\
+        \hline
+        8 & \%dil & \%sil & \%dl & \%cl & \%r8b & \%r9b \\
+        \hline
+    \end{tabular}
+\end{table}
+
+如果一个函数有大于6个整型参数，超出6个的部分就要通过栈来传递。
+
+\paragraph{栈上的局部存储}
+
+有些时候，局部数据必须存放在内存中，常见的情况包括：
+\begin{itemize}
+    \item 寄存器不足够存放所有的本地数据。
+    \item 对一个局部变量使用地址运算符‘＆’，因此必须能够为它产生一个地址。
+    \item 某些局部变量是数组或结构，因此必须能够通过数组或结构引用被访问到。
+\end{itemize}
+
+\paragraph{寄存器中的局部存储空间}
+
+寄存器组是唯一被所有过程共享的资源，我们需要确保当一个过程（调用者）调用另一个过程（被调用者）时，被调用者不会覆盖调用者稍后会使用的寄存器值。
+
+根据惯例，寄存器rbx、rbp和r12-r15被划分为\emph{被调用者保存寄存器}。
+当过程P调用过程Q时，Q必须保存这些寄存器的值，保证它们的值在Q返回到P时与Q被调用时是一样的。
+所有其他的寄存器，除了栈指针rsp，都分类为\emph{调用者保存寄存器}。
 
 \subsection{数据结构}
 
