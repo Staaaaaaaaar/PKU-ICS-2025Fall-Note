@@ -66,6 +66,12 @@
     \end{tabular}
 \end{table}
 
+注意：
+\begin{itemize}
+    \item 比例因子$s$必须是1、2、4或者8。
+    \item 基址和变址寄存器都必须是64位寄存器。
+\end{itemize}
+
 \subsubsection{基础指令}
 \paragraph{数据传送指令}
 \begin{table}[H]
@@ -165,6 +171,12 @@
     \end{tabular}
 \end{table}
 
+注意：
+\begin{itemize}
+    \item 移位指令只有一个操作数D时，代表将D的值左移或右移1位。
+    \item 位移指令的移位量只能存放在单字节寄存器\%cl中，或者作为立即数给出。
+\end{itemize}
+
 \subsection{控制}
 \subsubsection{条件码}
 \paragraph{条件码定义}
@@ -184,6 +196,14 @@
         \hline
     \end{tabular}
 \end{table}
+
+注意：
+\begin{itemize}
+    \item leaq指令不改变任何条件码，因为它是用来进行地址计算的。
+    \item 对于XOR,进位标志和溢出标志会设置成0。
+    \item 对于移位操作，进位标志将设置为最后一个被移出的位，而溢出标志设置为0。
+    \item INC和DEC指令会设置溢出和零标志，但是不会改变进位标志。
+\end{itemize}
 \paragraph{条件码访问}
 \begin{table}[H]
     \centering
