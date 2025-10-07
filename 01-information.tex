@@ -88,6 +88,19 @@ C语言中\emph{字符串}被编码为一个以null（其值为0）字符结尾�
     \item 按位取反（NOT）
 \end{itemize}
 
+\begin{sidenote}{位级运算的完备性}
+    位级运算中的按位与（AND）、按位或（OR）和按位取反（NOT）是完备的，即可以通过它们的组合实现任何其他位级运算。
+    例如，按位异或（XOR）可以通过以下表达式实现：
+    $$ x \oplus y = (x \& \sim y) | (\sim x \& y) $$
+    常见的完备集有：
+    \begin{itemize}
+        \item $\{AND, NOT\}$
+        \item $\{OR, NOT\}$
+        \item $\{NAND\}$
+        \item $\{NOR\}$
+    \end{itemize}
+\end{sidenote}
+
 \paragraph{逻辑运算}
 \begin{itemize}
     \item 逻辑与（AND）
@@ -219,6 +232,19 @@ $$
               x /_w^t 2^k = (x + (1 << k) - 1) >> k
           $$
 \end{itemize}
+
+注意，C语言中的$/$运算符对于整数除法采用向零舍入方式。
+
+\begin{sidenote}{整数乘法的二进制低位结果}
+    假设有两个 $n$ 位的二进制数，其位模式分别为 $A$ 和 $B$。作为无符号整数，它们的值即为 $A$ 和 $B$。
+    它们的数学乘积是 $A \cdot B$。在计算机中，仅保留低 $n$ 位，相当于计算 $(A \cdot B) \mod 2^n$。
+    若将 $A$ 和 $B$ 解释为有符号整数（补码），设 $a = A - 2^n \cdot \text{sign}(A)$，$b = B - 2^n \cdot \text{sign}(B)$，其中 $\text{sign}(X)$ 在 $X$ 为负数时为 1，否则为 0。
+    有符号乘积的低 $n$ 位为 $(a \cdot b) \mod 2^n$，与无符号乘积的低 $n$ 位相同。推导如下：
+    \begin{align*}
+        (a \cdot b) \mod 2^n & = [(A - 2^n \cdot \text{sign}(A)) \cdot (B - 2^n \cdot \text{sign}(B))] \mod 2^n \\
+                             & = (A \cdot B) \mod 2^n
+    \end{align*}
+\end{sidenote}
 
 \subsection{浮点数}
 \subsubsection{浮点数表示}
