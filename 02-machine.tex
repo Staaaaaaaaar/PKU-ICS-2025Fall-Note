@@ -558,7 +558,7 @@ C语言的struct声明创建一个数据类型，将可能不同类型的对象�
 编译器维护关于每个结构类型的信息，指示每个字段的字节偏移。
 它以这些偏移作为内存引用指令中的位移，从而产生对结构元素的引用。
 \begin{lstlisting}[style=CStyle]
-struct rec {
+struct s {
     int i;
     int j;
     int a[2];
@@ -575,6 +575,14 @@ struct rec {
 对齐原则是任何K字节的基本对象的地址必须是K的倍数。
 
 \subsubsection{联合}
+C语言的union声明创建一个数据类型，它的所有字段都存放在同一段内存区域中。一个联合的总的大小等于它最大字段的大小。
+\begin{lstlisting}[style=CStyle]
+union u {
+    int i;
+    float f;
+    char c;
+};
+\end{lstlisting}
 
 \subsubsection{浮点数}
 在AVX浮点体系结构中，允许数据存储在16个YMM寄存器中，它们的名字为\%ymm0-\%ymm15。每个YMM寄存器都是256位（32字节）。
@@ -721,6 +729,129 @@ int * (* (*a) (int) ) [10];
 */
 \end{lstlisting}
 
+\subsubsection{内存布局}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{memory-layout.png}
+\end{figure}
 
+\subsubsection{缓冲溢出攻击}
+C对于数组引用不进行任何边界检查，而且局部变量和状态信息（例如保存的寄存器值和返回地址）都存放在栈中。
+对越界的数组元素的写操作可能会破坏存储在栈中的状态信息。
+
+一种特别常见的状态破坏称为\emph{缓冲区溢出}。
+\begin{lstlisting}[style=CStyle]
+/* Implementation of library function gets() */
+char *gets(char *s)
+{
+    int c;
+    char *dest = s;
+    while ((c = getchar()) != '\n' && c != EOF)
+        *dest++ = c;
+    if (c == EOF && dest == s)
+        /* No characters read */
+        return NULL;
+    *dest++ ='\0';  /* Terminate string */
+    return s;
+}
+/* Read input line and write it back */
+void echo()
+{
+    char buf[8];  /* Way too small! */
+    gets(buf);
+    puts(buf);
+}
+\end{lstlisting}
+\begin{lstlisting}[style=ASMStyle]
+; void echo()
+echo:
+subq    $24, %rsp
+movq    %rsp, %rdi
+call    gets
+movq    %rsp, %rdi
+call    puts
+addq    $24, %rsp
+ret
+\end{lstlisting}
+\paragraph{栈粉碎攻击}
+
+汇编代码显示，函数调用的参数和存储的返回指针之间的16个字节是未被使用的。
+只要用户输入不超过7个字符，gets返回的字符串（包括结尾的null） 就能够放进为buf分配的空间里。
+不过，长一些的字符串就会导致gets覆盖栈上存储的某些信息。
+随着字符串变长，下面的信息会被破坏：
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+输入的字符数量 & 附加的被破坏的状态 \\ \hline
+0到7                               & 无                                      \\ \hline
+9到23                              & 未被使用的栈空间                        \\ \hline
+24到31                             & 返回地址                                \\ \hline
+32及以上                               & caller中保存的状态                      \\ \hline
+\end{tabular}
+\end{table}
+
+字符串到23个字符之前都没有严重的后果，但是超过以后，返回指针的值以及更多可能的保存状态会被破坏。
+如果存储的返回地址的值被破坏了，那么ret指令会导致程序跳转到一个完全意想不到的位置。
+
+\paragraph{代码注入攻击}
+
+缓冲区溢出的一个更加致命的使用就是让程序执行它本来不愿意执行的函数。
+这是一种最常见的通过计算机网络攻击系统安全的方法。
+
+通常，输入给程序一个字符串，这个字符串包含一些可执行代码的字节编码，称为攻击代码。
+另外，还有一些字节会用一个指向攻击代码的指针覆盖返回地址。
+那么，执行ret指令的效果就是跳转到攻击代码。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{code-injection-attacks.png}
+\end{figure}
+
+\subsubsection{缓冲溢出保护}
+\paragraph{代码级保护}
+通常，使用gets或其他不检查目标缓冲区大小的函数很容易导致溢出。
+为了避免这类问题，应优先使用带长度限制的替代函数，例如
+用fgets(buf, sizeof buf, stdin)或POSIX的getline代替gets，
+用snprintf代替sprintf，
+用strncat/strncpy或更推荐的BSD扩展strlcpy/strlcat来进行字符串复制和拼接。
+
+\paragraph{栈随机化}
+为了在系统中插入攻击代码，攻击者既要插入代码，也要插入指向这段代码的指针，这个指针也是攻击字符串的一部分。
+
+产生这个指针需要知道这个字符串放置的栈地址，栈随机化的思想使得栈的位置在程序每次运行时都有变化。
+因此，即使许多机器都运行同样的代码，它们的栈地址都是不同的。
+实现的方式是：程序开始时，在栈上分配一段0到n字节之间的随机大小的空间。
+
+\paragraph{限制可执行代码区域}
+在典型的程序中，只有保存编译器产生的代码的那部分内存才需要是可执行的，其他部分应当被限制为只允许读和写。
+随着处理器的内存保护引入了"NX"位，将读和执行访问模式分开，栈可以被标记为可读和可写，但是不可执行。
+由此，攻击代码即使被插入到栈中，也无法被执行。
+
+\paragraph{栈破坏检测}
+在C语言中，没有可靠的方法来防止对数组的越界写。
+但是，我们能够在发生了越界写的时候，在造成任何有害结果之前，尝试检测到它。
+
+较新版本的GCC在产生的代码中加入了一种栈保护者机制。
+该机制通过在栈帧中插入一个金丝雀值（canary）来检测栈溢出。
+在函数调用时，GCC会生成代码来保存当前的金丝雀值，并在函数返回时检查它是否被修改。
+如果金丝雀值被篡改，程序会立即终止，从而防止潜在的攻击。
+
+\begin{lstlisting}[style=ASMStyle]
+my_function:
+    pushq   %rbp                    ; 保存旧的基指针
+    movq    %rsp, %rbp              ; 建立新的栈帧
+    subq    $32, %rsp               ; 为局部变量与保存区留出空间
+    movq    %fs:40, %rax            ; 段寻址读取金丝雀值
+    movq    %rax, -8(%rbp)          ; 将金丝雀值保存到栈帧
+    ; ... 函数的实际主体 ...
+    movq    -8(%rbp), %rax          ; 从栈中取出保存的金丝雀值
+    cmpq    %fs:40, %rax            ; 将其与当前金丝雀值比较
+    jne     .Lstack_chk_fail        ; 若不相等，跳转到失败处理
+    addq    $32, %rsp               ; 清理栈上分配
+    popq    %rbp                    ; 恢复旧的基指针
+    ret
+.Lstack_chk_fail:
+    callq   __stack_chk_fail@plt
+\end{lstlisting}
 
 \newpage
