@@ -780,15 +780,15 @@ ret
 不过，长一些的字符串就会导致gets覆盖栈上存储的某些信息。
 随着字符串变长，下面的信息会被破坏：
 \begin{table}[H]
-\centering
-\begin{tabular}{|c|c|}
-\hline
-输入的字符数量 & 附加的被破坏的状态 \\ \hline
-0到7                               & 无                                      \\ \hline
-9到23                              & 未被使用的栈空间                        \\ \hline
-24到31                             & 返回地址                                \\ \hline
-32及以上                               & caller中保存的状态                      \\ \hline
-\end{tabular}
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        输入的字符数量 & 附加的被破坏的状态    \\ \hline
+        0到7     & 无            \\ \hline
+        9到23    & 未被使用的栈空间     \\ \hline
+        24到31   & 返回地址         \\ \hline
+        32及以上   & caller中保存的状态 \\ \hline
+    \end{tabular}
 \end{table}
 
 字符串到23个字符之前都没有严重的后果，但是超过以后，返回指针的值以及更多可能的保存状态会被破坏。
