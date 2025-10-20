@@ -241,10 +241,10 @@ word Min3 = [
 \begin{itemize}
     \item 时钟寄存器（简称寄存器）：存储单个位或字。时钟信号控制寄存器加载输入值。
     \item 随机访问存储器（简称内存）：存储多个字，用地址来选择该读或该写哪个字。
-    \begin{itemize}
-        \item 处理器的虚拟内存系统：硬件和操作系统软件结合起来使处理器可以在一个很大的地址空间内访问任意的字。
-        \item 寄存器文件：用于存储处理器操作数的小型、快速的存储单元集，寄存器标识符作为地址。
-    \end{itemize}
+          \begin{itemize}
+              \item 处理器的虚拟内存系统：硬件和操作系统软件结合起来使处理器可以在一个很大的地址空间内访问任意的字。
+              \item 寄存器文件：用于存储处理器操作数的小型、快速的存储单元集，寄存器标识符作为地址。
+          \end{itemize}
 \end{itemize}
 
 \paragraph{寄存器}
@@ -288,7 +288,86 @@ word Min3 = [
     \includegraphics[width=0.6\textwidth]{random-access-memory.png}
 \end{figure}
 
+\subsection{Y86-64 的顺序实现}
 
+通常，处理一条指令包括很多操作。将它们组织成某个特殊的阶段序列，即使指令的动作差异很大，但所有的指令都遵循统一的序列。
+创建这样一个框架，我们就能够设计一个充分利用硬件的处理器。
+\begin{itemize}
+    \item 取指 (fetch)：
+          将程序计数器寄存器作为地址，读取指令的字节。 PC 增加器 (PC incrementer) 计算 valP ，即增加了的程序计数器 。
+    \item 译码 (decode)：
+          寄存器文件有两个读端口 A 和 B ，从这两个端口同时读寄存器值 valA 和 valB 。
+    \item 执行 (execute)：
+          执行阶段会根据指令的类型，将 ALU 用于不同的目的。
+          对整数操作，它要执行指令所指定的运算。
+          对其他指令，它会作为一个加法器来计算增加或减少栈指针，或者计算有效地址，或者只是简单地加 0 ，将一个输入传递到输出。
+
+          条件码寄存器 (CC) 有三个条件码位。 ALU 负责计算条件码的新值。
+          当执行条件传送指令时，根据条件码和传送条件来计算决定是否更新目标寄存器。
+          同样，当执行一条跳转指令时，会根据条件码和跳转类型来计算分支信号 Cnd 。
+    \item 访存 (memory)：
+          在执行访存操作时，数据内存读出或写入一个内存字。
+    \item 写回 (write back)：
+          寄存器文件有两个写端口。端口 E 用来写 ALU 计算出来的值，而端口 M 用来写从数据内存中读出的值。
+    \item 更新 PC (PC update)：
+          程序计数器的新值选择自：下一条指令的地址 valP ；调用指令或跳转指令指定的目标地址 valE ；从内存读取的返回地址 valM 。
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{instruction-decode.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{SEQ-structure.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ops-stage-computation.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{rmmovq-stage-computation.png}
+    \end{subfigure}
+    \medskip
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{cmov-stage-computation.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{popq-stage-computation.png}
+    \end{subfigure}
+    \medskip
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{jmp-stage-computation.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{call-stage-computation.png}
+    \end{subfigure}
+    \medskip
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ret-stage-computation.png}
+    \end{subfigure}
+\end{figure}
+
+\subsubsection{取指阶段}
+
+\subsubsection{译码阶段}
+
+\subsubsection{执行阶段}
+
+\subsubsection{访存阶段}
+
+\subsubsection{写回阶段}
+
+\subsubsection{更新 PC 阶段}
+
+\subsubsection{SEQ 的时序}
 
 
 
