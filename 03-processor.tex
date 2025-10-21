@@ -322,34 +322,34 @@ word Min3 = [
 \end{figure}
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{ops-stage-computation.png}
     \end{subfigure}\hfill
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{rmmovq-stage-computation.png}
     \end{subfigure}
     \medskip
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{cmov-stage-computation.png}
     \end{subfigure}\hfill
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{popq-stage-computation.png}
     \end{subfigure}
     \medskip
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{jmp-stage-computation.png}
     \end{subfigure}\hfill
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{call-stage-computation.png}
     \end{subfigure}
     \medskip
-    \begin{subfigure}[t]{0.45\textwidth}
+    \begin{subfigure}[t]{0.5\textwidth}
         \centering
         \includegraphics[width=\linewidth]{ret-stage-computation.png}
     \end{subfigure}
@@ -357,21 +357,155 @@ word Min3 = [
 
 \subsubsection{取指阶段}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fetch.png}
+\end{figure}
+
+以 PC 作为第一个字节（字节 0 ）的地址，这个单元一次从内存读出 10 个字节。
+第一个字节被解释成指令字节，标号为 "Split" 的单元）分为两个 4 位的数。
+然后，标号为 "icode" 和 "ifun" 的控制逻辑块计算指令和功能码，或者使之等于从内存读出的值，或者当指令地址不合法时（由信号 imem error 指明），使这些值对应于 nop 指令。
+根据使之等于从内存读出的值，或者当指令地址不合法时（由信号 imem error 指明），使这些值对应于 nop 指令。
+根据 icode 的值，我们可以计算三个一位的信号：
+
+\begin{itemize}
+    \item need regids ：当指令需要寄存器 ID 字节时，该信号为 1 。
+    \item need valC ：当指令需要常数字段时，该信号为 1 。
+    \item instr valid ：当指令是有效指令时，该信号为 1 。
+\end{itemize}
+
+\begin{lstlisting}[style=CStyle]
+bool need_regids =
+    icode in { IRRMDVQ, IOPQ, IPUSHQ, IPOPQ,
+               IIRMDVQ, IRMMOVQ, IMRMDVQ };
+\end{lstlisting}
+
+从指令内存中读出的剩下 9 个字节是寄存器指示符字节和常数字的组合编码。
+标号为 "Align" 的硬件单元会处理这些字节，将它们放入寄存器字段和常数字中。
+当被计算出的信号 need regids 为 1 时，字节 l 被分开装入寄存器指示符 rA 和 rB 中。
+否则，这两个字段会被设为 OxF ，表明这条指令没有指明寄存器。
+根据信号 need regids 的值，要么根据字节 1-8 来产生 valC ，要么根据字节 2-9 来产生。
+
+PC 增加器硬件单元根据当前的 PC 以及两个信号 need regids 和 need valC 的值，产生信号 valP 。
+
 \subsubsection{译码阶段}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{decode.png}
+\end{figure}
+
+根据指令代码 icode 以及寄存器指示值 rA 和 rB ，可能还会根据执行阶段计算出的 Cnd 条件信号，产生出四个不同的寄存器文件的寄存器 ID 。
+两个读端口的地址输人为 srcA 和 srcB ，两个写端口的地址输入为 dstE 和 dstM 。
+
+\begin{lstlisting}[style=CStyle]
+word srcA = [
+    icode in { IRRMOVQ, IRMMOVQ, IOPQ, IPUSHQ } : rA;
+    icode in { IPOPQ, IRET } : RRSP;
+    1 : RNONE; # Don't need register
+];
+# WARNING: Conditional move not implemented correctly here
+word dstE = [
+    icode in { IRRMDVQ } : rB;
+    icode in { IIRMOVQ, IOPQ } : rB;
+    icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RRSP;
+    1 : RNONE; # Don't write any register
+];
+\end{lstlisting}
 
 \subsubsection{执行阶段}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{execute.png}
+\end{figure}
+
+ALU 单元根据 alufun 信号的设置，对输入 aluA 和 aluB 执行 ADD 、 SUBTRACT 、 AND 或 EXCLUSIVEOR 运算，输出为 valE 信号。
+\begin{lstlisting}[style=CStyle]
+word aluA = [
+    icode in { IRRMOVQ, IOPQ } : valA;
+    icode in { IIRMOVQ, IRMMOVQ, IMRMOVQ } : valC;
+    icode in { ICALL, IPUSHQ } : -8;
+    icode in { IRET, IPOPQ } : 8;
+    # Other instructions don't need ALU
+];
+word alufun = [
+    icode == IDPQ : ifun;
+    1 : ALUADD
+];
+\end{lstlisting}
+
+执行阶段还包括条件码寄存器。
+每次运行时， ALU 都会产生三个与条件码相关的信号零、符号和溢出。
+不过，我们只希望在执行 OPq 指令时才设置条件码。
+因此产生了一个信号 set cc 来控制是否该更新条件码寄存器。
+\begin{lstlisting}[style=CStyle]
+bool set_cc = icode in { IDPQ };
+\end{lstlisting}
+
+标号为 "cond" 的硬件单元会根据条件码和功能码来确定是否进行条件分支或者条件数据传送。
+它产生信号 Cnd ，用于设置条件传送的 dstE ，也用在条件分支的下一个 PC 逻辑中。
+
 \subsubsection{访存阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{memory.png}
+\end{figure}
+
+访存阶段的任务就是读或者写程序数据。两个控制块产生内存地址和内存输入数据的值。
+另外两个块产生表明应该执行读操作还是写操作的控制信号。
+当执行读操作时，数据内存产生值 valM 。
+\begin{lstlisting}[style=CStyle]
+word mem_addr = (
+    icode in { IRMMOVQ , IPUSHQ, ICALL, IMRMOVQ } : valE;
+    icode in { IPOPQ, IRET } : valA;
+    # Other instructions don't need address
+);
+bool mem_read = icode in { IMRMOVQ, IPOPQ, IRET };
+\end{lstlisting}
+
+访存阶段最后的功能是根据取值阶段产生的 icode 、 imem error 、 instr valid 值
+以及数据内存产生的 dmem error 信号，从指令执行的结果来计算状态码 Stat 。
 
 \subsubsection{写回阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{write-back.png}
+\end{figure}
+
+写回阶段的任务是将执行阶段产生的值 valE 或者访存阶段产生的值 valM 写入寄存器文件。
 
 \subsubsection{更新 PC 阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{PC-update.png}
+\end{figure}
+
+SEQ 中最后一个阶段会产生程序计数器的新值。
+依据指令的类型和是否要选择分支，新的 PC 可能是 valC 、 valM 或 valP 。
+\begin{lstlisting}[style=CStyle]
+word new_pc = [
+    # Call. Use instruction constant
+    icode == ICALL : valC;
+    # Taken branch. Use instruction constant
+    icode == IJXX && Cnd : valC;
+    # Completion of RET instruction. Use value from stack
+    icode == IRET : valM;
+    # Default: Use incremented PC
+    1 : valP;
+];
+\end{lstlisting}
 
 \subsubsection{SEQ 的时序}
 
+SEQ 的实现包括组合逻辑和两种存储器设备：时钟寄存器（程序计数器和条件码寄存器），随机访问存储器（寄存器文件、指令内存和数据内存）。
+组合逻辑不需要任何时序或控制，只要输入变化了，值就通过逻辑门网络传播。
+存储器设备通过一个时钟信号来控制，它触发将新值装载到寄存器以及将值写到随机访问存储器中。
 
-
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{SEQ-operation.png}
+\end{figure}
 
 
 
