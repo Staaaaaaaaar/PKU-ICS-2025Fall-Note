@@ -119,7 +119,9 @@
 \lstdefinestyle{CStyle}{
   language=C,
   morekeywords={inline,__inline,__attribute__,constexpr,decltype,nullptr,
-      size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t}
+      size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t},
+  % 将 # 也视为行注释的开始符号
+  morecomment=[l][\color{codecomment}]{\#}
 }
 % 汇编语言风格
 \lstdefinestyle{ASMStyle}{
