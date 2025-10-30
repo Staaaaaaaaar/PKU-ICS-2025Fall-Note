@@ -71,7 +71,7 @@ DRAM 输出它的 (i, j) 超单元的 8 位内容。模块中的电路收集这�
 
 下图的主要部件是 CPU 芯片、 I/O
 桥接器 (I/O bridge) ，以及组成主存的 DRAM 内存模块。
-这些部件由一对总线连接起来，其中一条总线是系统总线 (system bus) , 它连接 CPU 和 
+这些部件由一对总线连接起来，其中一条总线是系统总线 (system bus) , 它连接 CPU 和
 I/O 桥接器，另一条总线是内存总线 (memory bus), 它连接 I/O 桥接器和主存。 I/O 桥接
 器将系统总线的电子信号翻译成内存总线的电子信号。 I/O 桥也将
 系统总线和内存总线连接到 I/O 总线，像磁盘和图形卡这样的 I/O 设备共享 I/O 总线。
@@ -105,12 +105,12 @@ I/O 桥接器，另一条总线是内存总线 (memory bus), 它连接 I/O 桥�
     \item 面密度 (areal density)：每平方英寸上的位数，记录密度和轨道密度的乘积。
 \end{itemize}
 \begin{center}
-磁盘容量 = 字节数/扇区 $\times$ 平均扇区数/磁道 $\times$ 磁道数/表面 $\times$ 表面数/盘片 $\times$ 盘片数/磁盘
+    磁盘容量 = 字节数/扇区 $\times$ 平均扇区数/磁道 $\times$ 磁道数/表面 $\times$ 表面数/盘片 $\times$ 盘片数/磁盘
 \end{center}
 \begin{sidenote}{－千兆字节有多大}
-对于与 DRAM 和 SRAM 容量相关的计量单位，通常 $K=2^{10}$，$M=2^{20}$，$G=2^{30}$ 而
-$T= 2^{40}$。对于与像磁盘和网络这样的 I/O 设备容量相关的计量单位，通常 $K = 10^{3}$，
-$M= 10^{6}$，$G = 10^{9}$，而 $T=10^{12}$。
+    对于与 DRAM 和 SRAM 容量相关的计量单位，通常 $K=2^{10}$，$M=2^{20}$，$G=2^{30}$ 而
+    $T= 2^{40}$。对于与像磁盘和网络这样的 I/O 设备容量相关的计量单位，通常 $K = 10^{3}$，
+    $M= 10^{6}$，$G = 10^{9}$，而 $T=10^{12}$。
 \end{sidenote}
 
 \paragraph{磁盘操作}
@@ -133,16 +133,83 @@ $M= 10^{6}$，$G = 10^{9}$，而 $T=10^{12}$。
 
 \paragraph{磁盘逻辑块}
 
+磁盘封装中有一个小的硬件／固件设备，称为磁盘控制器，维护着逻辑块号和实际（物理）磁盘扇区之间的映射关系。
+
+\paragraph{连接 I/O 设备}
+
+例如图形卡、监视器、鼠标、键盘和磁盘这样的输入／输出 (I/0) 设备，都是通过 I/0
+总线连接到
+CPU 和主存的。
+
+虽然 I/0 总线比系统总线和内存总线慢，但是它可以容纳种类繁多的第三方 I/0 设
+备。
+\begin{itemize}
+    \item 通用串行总线 (Universal Serial Bus, USB) 控制器
+    \item 图形卡（或适配器）(Graphics Card/Adapter)
+    \item 主机总线适配器 (Host Bus Adapter, HBA)
+    \item 网络适配器 (Network Adapter)
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{memory/buses.png}
+\end{figure}
+
+\paragraph{访问磁盘}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{memory/disk-access.png}
+\end{figure}
+
+\subsubsection{固态硬盘}
+
+固态硬盘 (Solid State Disk, SSD) 是一种基于闪存的存储技术。一个 SSD 封装由一个或多个闪存芯片和闪存翻
+译层 (flash translation layer) 组成，闪存芯片替代传统旋转磁盘中的机械驱动器，而闪存
+翻译层是一个硬件／固件设备，扮演与磁盘控制器相同的角色，将对逻辑块的请求翻译成
+对底层物理设备的访问。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{memory/SSD.png}
+\end{figure}
+
+一个闪存由 B 个块的序列组成，每个块由 P 页组成。
+数据是以页为单位读写的。
+只有在一页所属的块整个被擦除之后，才能写这一页（通常是指该块中的所有位都被设置为 1）。
+不过，一旦一个块被擦除了，块中每一个页都可以不需要再进行擦除就写一次。
+
 \begin{sidenote}{局部性原理}
     局部性原理(Locality Principle)是计算机科学中的一个重要概念，指的是在程序执行过程中，访问的数据和指令往往集中在某些特定的区域。这种现象可以分为两种类型：时间局部性和空间局部性。
-    
-    \textbf{时间局部性}(Temporal Locality)指的是如果一个数据项在某个时间点被访问，那么在不久的将来它很可能会再次被访问。换句话说，最近使用过的数据很可能会再次被使用。
-    
-    \textbf{空间局部性}(Spatial Locality)指的是如果一个数据项在某个时间点被访问，那么与它相邻的数据项也很可能会在不久的将来被访问。换句话说，程序倾向于访问存储器中相近的地址。
-    
-    局部性原理是设计高效存储器层次结构（如缓存、主存和辅助存储器）的基础。通过利用局部性原理，计算机系统可以显著提高数据访问速度，减少延迟，从而提升整体性能。
 
+    \textbf{时间局部性}(Temporal Locality)指的是如果一个数据项在某个时间点被访问，那么在不久的将来它很可能会再次被访问。换句话说，最近使用过的数据很可能会再次被使用。
+
+    \textbf{空间局部性}(Spatial Locality)指的是如果一个数据项在某个时间点被访问，那么与它相邻的数据项也很可能会在不久的将来被访问。换句话说，程序倾向于访问存储器中相近的地址。
+
+    局部性原理是设计高效存储器层次结构（如缓存、主存和辅助存储器）的基础。通过利用局部性原理，计算机系统可以显著提高数据访问速度，减少延迟，从而提升整体性能。
 \end{sidenote}
 
 
 \subsection{缓存}
+\subsubsection{存储器层次结构}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{memory/memory-hierarchy.png}
+\end{figure}
+
+\subsubsection{存储器层次结构中的缓存}
+
+一般而言，高速缓存 (cache) 是一个小而快速的存储设备，它作为存储在更大、也更慢的设备中的数据对象的缓冲区域。
+存储器层次结构的中心思想是，对于每个 k，位于 k 层的更快更小的存储设备作为位于 k+1 层的更大更慢的存储设备的缓存。
+
+\begin{itemize}
+    \item \textbf{缓存命中}(cache hit)：当处理器请求的数据已经存在于缓存中时，就发生了缓存命中。
+    \item \textbf{缓存未命中}(cache miss)：当处理器请求的数据不在缓存中时，就发生了缓存未命中。
+    \begin{itemize}
+        \item \textbf{冷未命中}(cold miss)：也称为初始未命中 (compulsory miss)，当数据第一次被访问时发生，因为它还没有被加载到缓存中。
+        \item \textbf{容量未命中}(capacity miss)：当缓存的容量不足以容纳工作集 (working set) 时发生，即使缓存使用了最优的替换策略，也会发生这种未命中。
+        \item \textbf{冲突未命中}(conflict miss)：当多个数据块映射到缓存中的同一位置时发生，即使缓存有足够的容量，也会发生这种未命中。
+        \item \textbf{一致性未命中}(coherence miss)：在多处理器系统中，当一个处理器修改了缓存中的数据，而另一个处理器试图访问该数据时发生。
+    \end{itemize}
+\end{itemize}
