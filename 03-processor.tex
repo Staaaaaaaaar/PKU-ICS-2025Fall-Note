@@ -508,32 +508,180 @@ SEQ 的实现包括组合逻辑和两种存储器设备：时钟寄存器（程�
 \end{figure}
 
 \subsection{Y86-64 的流水线实现}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe.png}
+\end{figure}
 
 \subsubsection{PC 选择和取指阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-PC-select-fetch.png}
+\end{figure}
+
 \paragraph{分支预测}
+\begin{lstlisting}[style=CStyle]
+word f_predPC = [
+    f_icode in { IJXX, ICALL } : f_valC;
+    1 : f_valP;
+];
+word f_pc = [
+    # Mispreiicted branch. Fetch at incremented PC
+    M_icode == IJXX && !M_Cnd: M_valA;
+    # Completion of RET instruction
+    W_icode == IRET: W_valM;
+    # Default: Use predicted value of PC
+    1 : f_predPC;
+];
+\end{lstlisting}
+
 \paragraph{控制冒险}
+当处理器无法根据取指阶段的当前指令来确定下一条指令的地址时，就会出现控制冒险。
+控制冒险只会发生在 ret 指令和跳转指令。而且，后一种情况只有在条件跳转方向预测错误时才会造成麻烦。
+
 \subsubsection{译码和写回阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-decode-write-back.png}
+\end{figure}
+
+合并信号 valA 和 valP 的依据是，只有 call 和跳转指令在后面的阶段中需要 valP 的值，
+而这些指令并不需要从寄存器文件 A 端口中读出的值。这个选择是由该阶段的
+icode 信号来控制的。当信号 D-icode 与 call 或 jXX 的指令代码相匹配时，这个块就会
+选择 D-valP 作为它的输出。
+
 \paragraph{数据冒险}
+如果一条指令的操作数被它前面三条指令中的任意一条改变的话，都会出现数据冒险。
+使用数据转发技术，可以从流水线的后面阶段将值直接转发到前面的阶段，从而避免大多数数据冒险。
+对于加载/使用数据冒险（即一条指令从内存加载一个值，然后下一条指令使用这个值），必须再插入一个气泡来解决冒险问题。
+
+
+\paragraph{数据转发}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/forwarding.png}
+\end{figure}
+\begin{lstlisting}[style=CStyle]
+word d_valA = [
+    D_icode in { ICALL, IJXX } : D_valP; # Use incremented PC
+    d_srcA == e_dstE : e_valE; # Forward valE from execute
+    d_srcA == M_dstM : m_valM; # Forward valM from memory
+    d_srcA == M_dstE : M_valE; # Forward valE from memory
+    d_srcA == W_dstM : W_valM; # Forward valM from write back
+    d_srcA == W_dstE : W_valE; # Forward valE from write back
+    1 : d_rvalA; # Use value read from register file
+];
+\end{lstlisting}
+
+上述 HCL 代码中赋予这 5 个转发源的优先级是非常重要的。如果选择了其他任何顺序，对某些程序来说，流水线就会出错。
+
+\paragraph{状态更新}
+由于流水线寄存器 W 保存着最近完成的指令的状态，很自然地要用这个值来表示整个处理器状态。
+唯一要考虑的特殊情况是当写回阶段有气泡时。
+这是正常操作的一部分，因此对这种情况，我们也希望状态码是 AOK。
+\begin{lstlisting}[style=CStyle]
+word Stat = [
+    W_stat == SBUB : SAOK; # Bubble
+    1 : W_stat;
+];
+\end{lstlisting}
+
 \subsubsection{执行阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-execute.png}
+\end{figure}
+
+信号 e-valE 和 e-dstE 作为转发源，指向译码阶段。
+标号为 Set CC 的逻辑以信号 m-stat 和 W-stat 作为输入，这个
+逻辑决定了是否要更新条件码。这些信号被用来检查一条导致异常的指令正在通过后面的
+流水线阶段的情况，因此，任何对条件码的更新都会被禁止。
+
 \subsubsection{访存阶段}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-memory.png}
+\end{figure}
+
+流水线寄存器 M 和 W 中的值作为转发和流水线控制逻辑的一部分，提供给电路中其他部分。
 
 \subsubsection{控制逻辑}
 \paragraph{控制机制}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/normal-stall-bubble.png}
+\end{figure}
+
+假设每个流水线寄存器有两个控制输入：暂停 (stall) 和气泡 (bubble)。这些信号的设
+置决定了当时钟上升时该如何更新流水线寄存器。
+在正常操作下, 这两个输入都设为 0，使得寄存器加载它的输入作为新的状态。
+当暂停信号设为 1 时，禁止更新状态，这使得它可以将指令阻塞在某个流水线阶段中。
+当气泡信号设置为 1 时，寄存器状态会设置成某个固定的复位配置 (reset configuration)，得到一个等效于 nop 指令的状态。
+我们会将气泡和暂停信号都设为 1 看成是出错。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-control.png}
+\end{figure}
+
+根据来自流水线寄存器和流水线阶段的信号，控制逻辑产生流水线寄存器的暂停和气泡控制信号，同时也决定是否要更新条件码寄存器。
+
 \paragraph{触发条件}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-control-detection.png}
+\end{figure}
+
 \paragraph{处理}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-control-action.png}
+\end{figure}
+
 \paragraph{控制条件的组合}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/pipe-control-combination.png}
+\end{figure}
 
+从这些图中我们可以看出，大多数控制条件是互斥的。只有用箭头标明的两种组合可能同时出现。
 
+组合 A 中执行阶段中有一条不选择分支的跳转指令，而译码阶段中有一条 ret 指令。
+出现这种组合要求 ret 指令不选择分支的目标处。流水线控制逻辑应该发现分支预测错误，因此要取消 ret 指令。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/combination-A.png}
+\end{figure}
 
+组合情况 A 的处理与预测错误的分支相似，只不过在取指阶段是暂停。
+因此我们得出结论，流水线能正确处理这种组合情况。
 
+组合 B 包括一个加载/使用冒险，其中加载指令设置寄存器 rsp, 然后 ret 指令用这
+个寄存器作为源操作数，因为它必须从栈中弹出返回地址。流水线控制逻辑应该将 ret 指
+令阻塞在译码阶段。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{processor/combination-B.png}
+\end{figure}
 
+上图表明组合 B 需要特殊处理。
+\begin{lstlisting}[style=CStyle]
+bool F_stall =
+    # Conditions for a load/use hazard
+    E_icode in { IMRMOVQ, IPOPQ } &&
+    E_dstM in { d_srcA, d_srcB } ||
+    # Stalling at fetch while ret passes through pipeline
+    IRET in { D_icode, E_icode, M_icode };
 
-
-
-
-
-
-
+bool D_bubble =
+    # Mispredicted branch
+    (E_icode == IJXX && !e_Cnd) ||
+    # Stalling at fetch while ret passes through pipeline
+    # but not condition for a load/use hazard
+    !(E_icode in { IMRMOVQ, IPOPQ } && E_dstM in { d_srcA, d_srcB }) &&
+    IRET in { D_icode, E_icode, M_icode };
+\end{lstlisting}
 
 \newpage
