@@ -18,11 +18,11 @@
 \paragraph{指令编码}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{instruction-encode.png}
+    \includegraphics[width=0.8\textwidth]{processor/instruction-encode.png}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{instruction-function-encode.png}
+    \includegraphics[width=0.8\textwidth]{processor/instruction-function-encode.png}
 \end{figure}
 
 \begin{itemize}
@@ -42,7 +42,7 @@
 \paragraph{寄存器编码}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{register-encode.png}
+    \includegraphics[width=0.8\textwidth]{processor/register-encode.png}
 \end{figure}
 
 15 个程序寄存器中每个都有一个相对应的范围在 0 到 OxE 之间的寄存器标识符 (register ID) 。 当需要指明不应访问任何寄存器时，就用 ID 值 OxF 来表示。
@@ -51,7 +51,7 @@
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{status-code.png}
+    \includegraphics[width=0.6\textwidth]{processor/status-code.png}
 \end{figure}
 
 Y86-64 中的状态码描述程序执行的总体状态。正常执行时，状态码为 AOK 。当程序执行 halt 指令时，状态码变为 HLT 。如果程序试图访问无效的内存地址，状态码变为 ADR 。如果程序试图执行无效指令，状态码变为 INS 。
@@ -122,7 +122,7 @@ stack:
 辑门总是活动的，一旦一个门的输入变化了，在很短的时间内，输出就会相应地变化。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{logic-gate.png}
+    \includegraphics[width=0.8\textwidth]{processor/logic-gate.png}
 \end{figure}
 \subsubsection{组合电路}
 
@@ -134,7 +134,7 @@ stack:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{bit-equality.png}
+    \includegraphics[width=0.8\textwidth]{processor/bit-equality.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 bool eq = (a && b) || (!a && !b);
@@ -147,7 +147,7 @@ bool eq = (a && b) || (!a && !b);
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{bit-multiplexor.png}
+    \includegraphics[width=0.8\textwidth]{processor/bit-multiplexor.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 bool out = (s && a) || (!s && b);
@@ -163,7 +163,7 @@ bool out = (s && a) || (!s && b);
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{word-equality.png}
+    \includegraphics[width=0.8\textwidth]{processor/word-equality.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 bool Eq = (A == B);
@@ -190,7 +190,7 @@ bool Eq = (A == B);
 从逻辑上讲，这些选择表达式是顺序求值的，且第一个求值为 1 的情况会被选中。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{word-multiplexor.png}
+    \includegraphics[width=0.8\textwidth]{processor/word-multiplexor.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 word Out = [
@@ -200,7 +200,7 @@ word Out = [
 \end{lstlisting}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{4-way-multiplexor.png}
+    \includegraphics[width=0.6\textwidth]{processor/4-way-multiplexor.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 word Out4 = [
@@ -212,7 +212,7 @@ word Out4 = [
 \end{lstlisting}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{min-multiplexor.png}
+    \includegraphics[width=0.6\textwidth]{processor/min-multiplexor.png}
 \end{figure}
 \begin{lstlisting}[style=CStyle]
 word Min3 = [
@@ -230,7 +230,7 @@ word Min3 = [
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{ALU.png}
+    \includegraphics[width=0.8\textwidth]{processor/ALU.png}
 \end{figure}
 
 
@@ -253,11 +253,11 @@ word Min3 = [
 当时钟变成高电位的时候，输入信号就加载到寄存器中，成为下一个状态 y , 直到下一个时钟上升沿，这个状态就一直是寄存器的新输出。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{register.png}
+    \includegraphics[width=0.8\textwidth]{processor/register.png}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{registers.png}
+    \includegraphics[width=0.8\textwidth]{processor/registers.png}
 \end{figure}
 
 \paragraph{寄存器文件}
@@ -270,7 +270,7 @@ word Min3 = [
 当 dstW 设为特殊的 ID 值 0xF 时，不会写任何程序寄存器。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{register-file.png}
+    \includegraphics[width=0.8\textwidth]{processor/register-file.png}
 \end{figure}
 
 \paragraph{内存}
@@ -285,7 +285,7 @@ word Min3 = [
 置为 1 。然后当我们控制时钟时，只要地址是合法的，就会更新内存中指定的位置。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{random-access-memory.png}
+    \includegraphics[width=0.6\textwidth]{processor/random-access-memory.png}
 \end{figure}
 
 \subsection{Y86-64 的顺序实现}
@@ -314,44 +314,44 @@ word Min3 = [
 \end{itemize}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{instruction-decode.png}
+    \includegraphics[width=0.8\textwidth]{processor/instruction-decode.png}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{SEQ-structure.png}
+    \includegraphics[width=0.8\textwidth]{processor/SEQ-structure.png}
 \end{figure}
 \begin{figure}[H]
     \centering
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{ops-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/ops-stage-computation.png}
     \end{subfigure}\hfill
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{rmmovq-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/rmmovq-stage-computation.png}
     \end{subfigure}
     \medskip
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{cmov-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/cmov-stage-computation.png}
     \end{subfigure}\hfill
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{popq-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/popq-stage-computation.png}
     \end{subfigure}
     \medskip
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{jmp-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/jmp-stage-computation.png}
     \end{subfigure}\hfill
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{call-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/call-stage-computation.png}
     \end{subfigure}
     \medskip
     \begin{subfigure}[t]{0.5\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{ret-stage-computation.png}
+        \includegraphics[width=\linewidth]{processor/ret-stage-computation.png}
     \end{subfigure}
 \end{figure}
 
@@ -359,7 +359,7 @@ word Min3 = [
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{fetch.png}
+    \includegraphics[width=0.5\textwidth]{processor/fetch.png}
 \end{figure}
 
 以 PC 作为第一个字节（字节 0 ）的地址，这个单元一次从内存读出 10 个字节。
@@ -392,7 +392,7 @@ PC 增加器硬件单元根据当前的 PC 以及两个信号 need regids 和 ne
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{decode.png}
+    \includegraphics[width=0.5\textwidth]{processor/decode.png}
 \end{figure}
 
 根据指令代码 icode 以及寄存器指示值 rA 和 rB ，可能还会根据执行阶段计算出的 Cnd 条件信号，产生出四个不同的寄存器文件的寄存器 ID 。
@@ -417,7 +417,7 @@ word dstE = [
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{execute.png}
+    \includegraphics[width=0.5\textwidth]{processor/execute.png}
 \end{figure}
 
 ALU 单元根据 alufun 信号的设置，对输入 aluA 和 aluB 执行 ADD 、 SUBTRACT 、 AND 或 EXCLUSIVEOR 运算，输出为 valE 信号。
@@ -449,7 +449,7 @@ bool set_cc = icode in { IDPQ };
 \subsubsection{访存阶段}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{memory.png}
+    \includegraphics[width=0.5\textwidth]{processor/memory.png}
 \end{figure}
 
 访存阶段的任务就是读或者写程序数据。两个控制块产生内存地址和内存输入数据的值。
@@ -470,7 +470,7 @@ bool mem_read = icode in { IMRMOVQ, IPOPQ, IRET };
 \subsubsection{写回阶段}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{write-back.png}
+    \includegraphics[width=0.5\textwidth]{processor/write-back.png}
 \end{figure}
 
 写回阶段的任务是将执行阶段产生的值 valE 或者访存阶段产生的值 valM 写入寄存器文件。
@@ -478,7 +478,7 @@ bool mem_read = icode in { IMRMOVQ, IPOPQ, IRET };
 \subsubsection{更新 PC 阶段}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{PC-update.png}
+    \includegraphics[width=0.5\textwidth]{processor/PC-update.png}
 \end{figure}
 
 SEQ 中最后一个阶段会产生程序计数器的新值。
@@ -504,7 +504,7 @@ SEQ 的实现包括组合逻辑和两种存储器设备：时钟寄存器（程�
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{SEQ-operation.png}
+    \includegraphics[width=0.8\textwidth]{processor/SEQ-operation.png}
 \end{figure}
 
 \subsection{Y86-64 的流水线实现}
