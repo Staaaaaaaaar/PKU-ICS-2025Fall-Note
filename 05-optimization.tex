@@ -2,55 +2,499 @@
 
 \subsection{编译器优化}
 
+\subsubsection{代码移动}
+
+\begin{lstlisting}[style=CStyle]
+void set_row(double *a, double *b, long i, long n)
+{
+    long j;
+    for (j = 0; j < n; j++)
+        a[n*i+j] = b[j];
+}
+\end{lstlisting}
+\begin{lstlisting}[style=CStyle]
+void set_row(double *a, double *b, long i, long n)
+{
+    long j;
+    long ni = n*i;
+    double *rowp = a+ni;
+    for (j = 0; j < n; j++)
+        *rowp++ = b[j];
+}
+\end{lstlisting}
+\subsubsection{强度消减}
+
+\begin{lstlisting}[style=CStyle]
+for (i = 0; i < n; i++) {
+    int ni = n*i;
+    for (j = 0; j < n; j++)
+        a[ni + j] = b[j];
+}
+\end{lstlisting}
+\begin{lstlisting}[style=CStyle]
+int ni = 0;
+for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++)
+        a[ni + j] = b[j];
+    ni += n;
+}
+\end{lstlisting}
+\subsubsection{公共子表达式消除}
+
+\begin{lstlisting}[style=CStyle]
+up = val[(i-1)*n + j];
+down = val[(i+1)*n + j];
+left = val[i*n + j-1];
+right = val[i*n + j+1];
+sum = up + down + left + right;
+\end{lstlisting}
+\begin{lstlisting}[style=CStyle]
+long inj = i*n + j;
+up = val[inj - n];
+down = val[inj + n];
+left = val[inj - 1];
+right = val[inj + 1];
+sum = up + down + left + right;
+\end{lstlisting}
+
 \subsection{编译器的局限性}
 
-\subsection{代码优化}
+编译器必须很小心地对程序只使用安全的优化，也就是说对于程序可能遇到的所有可
+能的情况，在 C 语言标准提供的保证之下，优化后得到的程序必须和未优化的版本有一样的行
+为。
+\subsubsection{函数调用}
+
+\begin{lstlisting}[style=CStyle]
+long f();
+
+long func1() {
+    return f() + f() + f() + f();
+}
+
+long func2() {
+    return 4*f();
+}
+\end{lstlisting}
+
+最初看上去两个过程计算的都是相同的结果，但是 func2 只调用 f 一次，而 func1 调用 f 四次。
+
+不过，考虑下面 f 的代码：
+\begin{lstlisting}[style=CStyle]
+long counter= 0;
+long f() {
+    return counter++;
+}
+\end{lstlisting}
+
+这个函数有个副作用它修改了全局程序状态的一部分。改变调用它的次数会改变程序的行为。
+
+大多数编译器不会试图判断一个函数是否没有副作用。编译器会假设最糟的情况，并保持所有的函数调用不变。
+
+\subsubsection{内存别名使用}
+
+这种两个指针可能指向同一个内存位置的情况称为内存别名使用。
+在只执行安全的优化中，编译器必须假设不同的指针可能会指向内存中同一个位置。
+
+\begin{lstlisting}[style=CStyle]
+x = 1000; y = 3000;
+*q = y; /* 3000 */
+*p = x; /* 1000 */
+t1 = *q; /* 1000 or 3000 */
+\end{lstlisting}
+
+t1 的计算值依赖指针 p 和 q 是否指向内存中同一个位置。如果不是，t1 就等于
+3000，但如果是，t1 就等于 1000。这造成了一个主要的妨碍优化的因素，这也是可能严
+重限制编译器产生优化代码机会的程序的一个方面。
 
 \subsection{理解现代处理器}
 
+现代微处理器采用了复杂的硬件，试图使程序性能最大
+化。带来的一个后果就是处理器的实际操作与通过观察机器级程序所察觉到的大相径
+庭。在代码级上，看上去似乎是一次执行一条指令，每条指令都包括从寄存器或内存取
+值，执行一个操作，并把结果存回到一个寄存器或内存位置。在实际的处理器中，是同时
+对多条指令求值的，这个现象称为指令级并行。
 
+有两种下界描述了程序的最大性能：
+\begin{itemize}
+    \item \textbf{延迟界限}：当一系列操作必须按照严格顺序执行时，就会遇到延迟界限，因为在下一条指令开始之前，这条指令必须结束。当代码中的数据相关限制了处理器利用指令级并行的能力时，延迟界限能够限制程序性能。
+    \item \textbf{吞吐量界限}：吞吐量界限刻画了处理器功能单元的原始计算能力。这个界限是程序性能的终极限制。
+\end{itemize}
 
+\subsubsection{概览}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/modern-CPU-design.png}
+\end{figure}
 
+上图是现代微处理器的一个非常简单化的示意图，在工业界称为超标量 (superscalar)，
+意思是它可以在每个时钟周期执行多个操作，而且是乱序的 (out-of-order)，意思就是指令
+执行的顺序不一定要与它们在机器级程序中的顺序一致。整个设计有两个主要部分：指令
+控制单元 (Instruction Control Unit, ICU) 和执行单元 (Execution Unit, EU)。前者负责
+从内存中读出指令序列，并根据这些指令序列生成一组针对程序数据的基本操作；而后者
+执行这些操作。
 
+ICU 从指令高速缓存中读取指令，指令高速缓存是一个特殊的高速存储器，它包含最近访问的指令。
+现代处理器采用了一种称为分支预测的技术，处理器会猜测是否会选择分支，同时还预测
+分支的目标地址。使用投机执行的技术，处理器会开始取出位千它
+预测的分支会跳到的地方的指令，并对指令译码，甚至在它确定分支预测是否正确之前就
+开始执行这些操作。如果过后确定分支预测错误，会将状态重新设置到分支点的状态，并
+开始取出和执行另一个方向上的指令。
 
+指令译码逻辑接收实际的程序指令，并将它们转换成一组基本操作（有时称为微操作）。
+每个这样的操作都完成某个简单的计算任务。
 
+EU 接收来自取指单元的操作。通常，每个时钟周期会接收多个操作。这些操作会被
+分派到一组功能单元中，它们会执行实际的操作。这些功能单元专门用来处理不同类型的
+操作。
 
+使用投机执行技术对操作求值，但是最终结果不会存放在程序寄存器或数据内存中，
+直到处理器能确定应该实际执行这些指令。分支操作被送到 EU，不是确定分支该往哪里
+去，而是确定分支预测是否正确。如果预测错误，EU 会丢弃分支点之后计算出来的结果。
+它还会发信号给分支单元，说预测是错误的，并指出正确的分支目的。在这种情况中，分
+支单元开始在新的位置取指。
 
+在 ICU 中，退役单元 (retirement unit) 记录正在进行的处理，并确保它遵守机器级程
+序的顺序语义。图中展示了一个寄存器文件，它包含整数、浮点数和最近的 SSE 和
+AVX 寄存器，是退役单元的一部分，因为退役单元控制这些寄存器的更新。指令译码时，
+相关指令的信息被放置在一个先进先出的队列中。这个信息会一直保持在队列中，直到发
+生以下两个结果中的一个。首先，一旦一条指令的操作完成了，而且所有引起这条指令的
+分支点也都被确认为预测正确，那么这条指令就可以退役 (retired) 了，所有对程序寄存器
+的更新都可以被实际执行了。另一方面，如果引起该指令的某个分支点预测错误，这条指
+令会被清空 (flushed)，丢弃所有计算出来的结果。
 
+\subsubsection{功能单元性能}
 
+Intel Core i7 Haswell 参考机有 8 个功能单元：
+\begin{itemize}
+    \item 0：整数运算、浮点乘、整数和浮点数除法、分支
+    \item 1：整数运算、浮点加、整数乘、浮点乘
+    \item 2：加载、地址计算
+    \item 3：加载、地址计算
+    \item 4：存储
+    \item 5：整数运算
+    \item 6：整数运算、分支
+    \item 7：存储、地址计算
+\end{itemize}
 
+我们可以看出功能单元的这种组合具有同时执行多个同类型操作的潜力。它有 4 个功
+能单元可以执行整数操作，2 个单元能执行加载操作，2 个单元能执行浮点乘法。
 
+下表是 Intel Core i7 Haswell 参考机的一些算术运算的性能，每
+个运算都是由以下这些数值来刻画的：一个是延迟 (latency)，它表示完成运算所需要的总
+时间；另一个是发射时间 (issue time)，它表示两个连续的同类型的运算之间需要的最小
+时钟周期数；还有一个是容量 (capacity)，它表示能够执行该运算的功能单元的数量。
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/arithmetic-operation-performance.png}
+\end{figure}
 
+一个完全流水线化的功能单元有最大的吞吐量，每个时钟周期一个运算，而发
+射时间较大的功能单元的最大吞吐量比较小。具有多个功能单元可以进一步提高吞吐量。
+对一个容量为 C，发射时间为 I 的操作来说，处理器可能获得的吞吐量为每时钟周期 C/I 个操作。
 
+\subsection{代码优化}
 
+下面针对一个向量合并代码进行优化。
 
+\begin{lstlisting}[style=CStyle]
+/* Create abstract data type for vector */
+typedef struct {
+    long len;
+    data_t *data;
+} vec_rec, *vec_ptr;
 
+/* Retrieve vector element and store at dest.
+ * Return O (out of bounds) or 1 (successful)
+ */
+int get_vec_element(vec_ptr v, long index, data_t *dest)
+{
+    if (index < 0 || index >= v->len)
+        return 0;
+    *dest = v->data[index];
+    return 1;
+}
 
+/* Return length of vector */
+long vec_length(vec_ptr v)
+{
+    return v->len;
+}
 
+#define OP +
+#define IDENT 0
 
+/* Implementation with maximum use of data abstraction */
+void combine1(vec_ptr v, data_t *dest)
+{
+    long i;
+    *dest = IDENT;
+    for (i = 0; i < vec_length(v); i++) {
+        data_t val;
+        get_vec_element(v, i, &val);
+        *dest = *dest OP val;
+    }
+}
+\end{lstlisting}
 
+算术运算的延迟、发射时间和容量会影响合并函数的性能。我们用 CPE 值的两
+个基本界限来描述这种影响：
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-of-operation.png}
+\end{figure}
 
+延迟界限给出了任何必须按照严格顺序完成合并运算的函数所需要的最小 CPE 值。根据
+功能单元产生结果的最大速率，吞吐量界限给出了 CPE 的最小界限。
 
+\subsubsection{消除循环的低效率}
 
+combine2 在开始时调用 vec-length，并将结果赋值给局部变量 length。
+对某些数据类型和操作，这个变换明显地影响了某些数据类型和操作的整体性能。
 
+\begin{lstlisting}[style=CStyle]
+/* Move call to vec_length out of loop */
+void combine2(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length= vec_length(v);
+    *dest = IDENT;
+    for (i = 0; i < length; i++) {
+        data_t val;
+        get_vec_element(v, i, &val);
+        *dest = *dest OP val;
+    }
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-2.png}
+\end{figure}
 
+\subsubsection{减少过程调用}
 
+从 combine2 的代码中我们可以看出，每次循环迭代都会调用 get-vec-element 来获取下一个向量元素。
+对每个向量引用，这个函数要把向量索引与循环边界做比较，很明显会造成低效率。
+在处理任意的数组访问时，边界检查可能是个很有用的特性，但是对 combine2 代码的简单分析表明所有的引用都是合法的。
+作为替代，可以为我们的抽象数据类型增加一个函数 get-vec-start。这个函数返回数组的起始地址。
 
+\begin{lstlisting}[style=CStyle]
+data_t *get_vec_start(vec_ptr v)
+{
+    return v->data;
+}
 
+/* Direct access to vector data */
+void combine3(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length = vec_length(v);
+    data_t *data = get_vec_start(v);
+    *dest = IDENT;
+    for (i = 0; i < length; i++) {
+        *dest = *dest OP data[i];
+    }
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-3.png}
+\end{figure}
 
+\subsubsection{消除不必要的内存应用}
 
+combine3 的代码将合并运算计算的值累积在指针 dest 指定的位置。
+为了消除不必要的内存访问，可以将 dest 的值直接存储在一个寄存器中。
 
+\begin{lstlisting}[style=CStyle]
+/* Accumulate result in local variable */
+void combine4(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length = vec_length(v);
+    data_t *data = get_vec_start(v);
+    data_t acc = IDENT;
+    for (i = 0; i < length; i++) {
+        acc = acc OP data[i];
+    }
+    *dest = acc;
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-4.png}
+\end{figure}
 
+\subsubsection{循环展开}
 
+循环展开是一种程序变换，通过增加每次迭代计算的元素的数量，减少循环的迭代次数。
+我们称循环展开因子为 k，累积值储存在 l 个变量中的循环展开为 k $\times$ l 循环展开。
 
+\begin{lstlisting}[style=CStyle]
+/* 2 x 1 loop unrolling */
+void combine5(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length= vec_length(v);
+    long limit = length-1 ;
+    data_t *data = get_vec_start(v);
+    data_t acc = IDENT;
+    /* Combine 2 elements at a time */
+    for (i = 0; i < limit; i+=2) {
+        acc = (acc OP data[i]) OP data[i+1];
+    }
 
+    /* Finish any remaining elements */
+    for (; i < length; i++) {
+        acc = acc OP data[i];
+    }
+    *dest = acc;
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-5.png}
+\end{figure}
 
+k $\times$ 1 循环展开并不能将性能改进到超过延迟界限。
+以类型 data-t 为 double, 操作为乘法时为例，
+关键路径还是 n 个 mul 操作——迭代次数减半了，但是每次迭代中还是有两个顺序的乘法操作。
+这个关键路径是 k $\times$ 1 循环展开代码的性能制约因素。
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/loop-unrolling-1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/loop-unrolling-2-1.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/loop-unrolling-2-2.png}
+    \end{subfigure}
+\end{figure}
 
+\subsubsection{累积变量}
 
+combine6 使用了 2 $\times$ 2 循环展开，
+将索引值为偶数的元素累积在变量 acc0 中，而索引值为奇数的元素累积在变量 acc1 中。
 
+\begin{lstlisting}[style=CStyle]
+/* 2 x 2 loop unrolling */
+void combine6(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length= vec_length(v);
+    long limit = length-1;
+    data_t *data= get_vec_start(v);
+    data_t acc0 = IDENT;
+    data_t acc1 = IDENT;
+    /* Combine 2 elements at a time */
+    for (i = 0; i < limit; i+=2) {
+        acc0 = acc0 OP data[i];
+        acc1 = acc1 OP data[i+1];
+    }
+    /* Finish any remaining elements */
+    for (; i < length; i++) {
+        acc0 = acc0 OP data[i];
+    }
+    *dest = acc0 OP acc1;
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-6.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/cumulative-variable-1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/cumulative-variable-2-1.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/cumulative-variable-2-2.png}
+    \end{subfigure}
+\end{figure}
+
+\subsubsection{结合变换}
+
+我们看到过做 k $\times$ 1 循环展开的 combine5 没有改变合并向最元素形成和或者乘积中执行的操作。
+不过，对代码做很小的改动，我们可以从根本上改变合并执行的方式，也极大地提高程序的性能。
+
+combine7 通过重新结合变换，改变了向量元素与累积值 acc 的合并顺序，产生了我们称为 2 $\times$ 1a 的循环展开形式。
+
+\begin{lstlisting}[style=CStyle]
+/* 2 x 1a loop unrolling */
+void combine7(vec_ptr v, data_t *dest)
+{
+    long i;
+    long length= vec_length(v);
+    long limit= length-1;
+    data_t *data = get_vec_start(v);
+    data_t acc = IDENT;
+    /* Combine 2 elements at a time */
+    for (i = 0; i < limit; i+=2) {
+        acc = acc OP (data[i] OP data[i+1]);
+    }
+    /* Finish any remaining elements */
+    for (; i < length; i++) {
+        acc = acc OP data[i];
+    }
+    *dest = acc;
+}
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/CPE-7.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{optimization/combined-transformation-1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/combined-transformation-2-1.png}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{optimization/combined-transformation-2-2.png}
+    \end{subfigure}
+\end{figure}
+
+重新结合变换能够减少计算中关键路径上操作的数量，通过更好地利用功能单元的流水线能力，得到更好的性能。
+
+\subsection{优化限制因素}
+
+\subsubsection{寄存器溢出}
+
+如果我们的并行度 p 超过了可用的寄存器数量，
+那么编译器会诉诸溢出 (spilling)，将某些临时值存放到内存中，通常是在
+运行时堆栈上分配空间。
+
+一旦编译器必须要诉诸寄存器溢出，那么维护多个累积变量的优势就很可能消失。
+
+\subsubsection{分支预测和预测错误处罚}
+
+当分支预测逻辑不能正确预测一个分支是否要跳转的时候，条件分支可能会招致很大的预测错误处罚。
+
+对于参考机来说，预测错误处罚是 19 个时钟周期，赌注很高。对千这个问题没有简单的答案，但
+是下面的通用原则是可用的。
+
+\begin{itemize}
+    \item 不要过分关心可预测的分支。
+    \item 书写适合用条件传送实现的代码。
+\end{itemize}
 
 \newpage
