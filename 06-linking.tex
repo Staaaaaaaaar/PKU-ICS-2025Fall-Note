@@ -1,0 +1,440 @@
+\section{链接}
+
+\subsection{静态链接}
+
+静态链接器 (static linker) 以一组可重定位目标文件和命令行
+参数作为输入，生成一个完全链接的、可以加载和运行的可执行目标文件作为输出。
+输入的可重定位目标文件由各种不同的代码和数据节 (section) 组成，每一节都是一个连续的字
+节序列。
+
+为了构造可执行文件，链接器必须完成两个主要任务：
+\begin{itemize}
+    \item 符号解析 (symbol resolution)：将所有目标文件中的符号引用与定义进行匹配。
+    \item 重定位 (relocation)：调整代码和数据节中的地址，以反映它们在最终可执行文件中的位置。
+\end{itemize}
+
+\subsubsection{可重定位目标文件}
+
+可重定位目标文件包含二进制代码和数据，其形式可以在编译时与其他可重定位
+目标文件合并起来，创建一个可执行目标文件。
+
+目标文件是按照特定的目标文件格式来组织的，各个系统的目标文件格式都不相同。
+从贝尔实验室诞生的第一个 Unix 系统使用的是 a.out 格式。 Windows 使用可移植可执行 (Portable Executable, PE) 格式。
+Mac OS-X 使用 Mach-O 格式。现代 x86-64 Linux 和 Unix 系统使用可执行可链接格式 (Executable and Linkable Format, ELF) 。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{linking/ELF-relocatable-file-structure.png}
+\end{figure}
+
+ELF 头 (ELF header) 以一个 16 字节的序列开始，这个序列描述了生成该文件的系统的字的大小和字节顺序。
+ELF 头剩下的部分包含帮助链接器语法分析和解释目标文件的信息。
+其中包括 ELF 头的大小、目标文件的类型（如可重定
+位、可执行或者共享的）、机器类型（如 x86-64）、节
+头部表 (section header table) 的文件偏移，以及节头
+部表中条目的大小和数量。
+
+不同节的位置和大小是由节头部表描述的，其中目标文件中每个节都有一个固定大小的条目 (entry) 。
+
+夹在 ELF 头和节头部表之间的都是节。一个典型的 ELF 可重定位目标文件包含下面几个节：
+\begin{itemize}
+    \item \texttt{.text}：已编译程序的机器代码。
+    \item \texttt{.data}：包含已初始化的全局变量和静态变量。
+    \item \texttt{.bss}：包含未初始化的全局变量和静态变量，以及所有被初始化为 0 的全局或静态变量。运行时，在内存中分配这些变量，初始值为 0 。
+    \item \texttt{.rodata}：包含只读数据，比如 printf 语句中的格式串和开关语句的跳转表。
+    \item \texttt{.symtab}：包含符号表，列出了目标文件中定义和引用的函数和全局变量的信息。
+    \item \texttt{.rel.text}：一个 \texttt{.text} 节中位置的列表，当链接器把这个目标文件和其他文件组合时，需要修改这些位置。
+    \item \texttt{.rel.data}：被模块引用或定义的所有全局变量的重定位信息。
+    \item \texttt{.debug}：调试符号表，其条目是程序中定义的局部变量和类型定义，程序中定义和引用的全局变量，以及原始的 C 源文件。只有以 -g 选项调用编译器驱动程序时，才会得到这张表。
+    \item \texttt{.line}：原始 C 源程序中的行号和 \texttt{.text} 节中机器指令之间的映射。只有以 -g 选项调用编译器驱动程序时，才会得到这张表。
+    \item \texttt{.strtab}：一个字符串表，其内容包括 \texttt{.symtab} 和 \texttt{.debug} 节中的符号表，以及节头部中的节名字。字符串表就是以 null 结尾的字符串的序列。
+\end{itemize}
+
+\subsubsection{符号和符号表}
+
+每个可重定位目标模块 m 都有一个符号表，它包含 m 定义和引用的符号的信息。
+在链接器的上下文中，有三种不同的符号：
+\begin{itemize}
+    \item 全局符号：由模块 m 定义并能被其他模块引用，对应于非静态的 C 函数和全局变量。
+    \item 外部符号：由其他模块定义并被模块 m 引用，对应于在其他模块中定义的非静态 C 函数和全局变量。
+    \item 局部符号：只被模块 m 定义和引用，对应于带 static 属性的 C 函数和全局变量。 这些符号在模块 m 中任何位置都可见，但是不能被其他模块引用。
+\end{itemize}
+
+符号表是由汇编器构造的，使用编译器输出到汇编语言 .s 文件中的符号。
+.symtab 节中包含 ELF 符号表。这张符号表包含一个条目的数组。
+
+\begin{lstlisting}[style=CStyle]
+typedef struct {
+    int   name;        /* String table offset */
+    char  type:4,      /* Function or data (4 bits) */
+          binding:4;   /* Local or global (4 bits) */
+    char  reserved;    /* Unused */
+    short section;     /* Section header index */
+    long  value;       /* Section offset or absolute address */
+    long  size;        /* Object size in bytes */
+} Elf64_Symbol;
+\end{lstlisting}
+
+name 是字符串表中的字节偏移，指向符号的以 null 结尾的字符串名字。 value 是符
+号的地址。对于可重定位的模块来说， value 是距定义目标的节的起始位置的偏移。对千
+可执行目标文件来说，该值是一个绝对运行时地址。 size 是目标的大小（以字节为单位）。
+type 通常要么是数据，要么是函数。符号表还可以包含各个节的条目，以及对应原始源
+文件的路径名的条目。所以这些目标的类型也有所不同。 binding 字段表示符号是本地的
+还是全局的。
+
+每个符号都被分配到目标文件的某个节，由 section 字段表示，该字段也是一个到
+节头部表的索引。有三个特殊的伪节 (pseudosection) , 它们在节头部表中是没有条目的：
+ABS 代表不该被重定位的符号； UNDEF 代表未定义的符号，也就是在本目标模块中引
+用，但是却在其他地方定义的符号； COMMON 表示还未被分配位置的未初始化的数据目
+标。对于 COMMON 符号， value 字段给出对齐要求，而 size 给出最小的大小。注意，
+只有可重定位目标文件中才有这些伪节，可执行目标文件中是没有的。
+
+\subsubsection{符号解析}
+
+链接器解析符号引用的方法是将每个引用与它输入的可重定位目标文件的符号表中的
+一个确定的符号定义关联起来。
+
+对那些和引用定义在相同模块中的局部符号的引用，符号
+解析是非常简单明了的。不过，对全局符号的引用解析就棘手得多。
+当编译器遇到一个不是在当前模块中定义
+的符号（变量或函数名）时，会假设该符号是在其他某个模块中定义的，生成一个链接器符
+号表条目，并把它交给链接器处理。如果链接器在它的任何输入模块中都找不到这个被引
+用符号的定义，就输出一条（通常很难阅读的）错误信息并终止。
+
+\paragraph{多重定义的全局符号}
+
+链接器的输入是一组可重定位目标模块。每个模块定义一组符号，有些是局部的（只
+对定义该符号的模块可见），有些是全局的（对其他模块也可见）。
+
+在编译时，编译器向汇编器输出每个全局符号，或者是强 (strong) 或者是弱 (weak),
+而汇编器把这个信息隐含地编码在可重定位目标文件的符号表里。函数和已初始化的全局
+变量是强符号，未初始化的全局变量是弱符号。
+
+根据强弱符号的定义， Linux 链接器使用下面的规则来处理多重定义的符号名：
+
+\begin{itemize}
+    \item 规则 1: 不允许有多个同名的强符号。
+    \item 规则 2: 如果有一个强符号和多个弱符号同名，那么选择强符号。
+    \item 规则 3: 如果有多个弱符号同名，那么从这些弱符号中任意选择一个。
+\end{itemize}
+
+\paragraph{静态库链接}
+
+迄今为止，我们都是假设链接器读取一组可重定位目标文件，并把它们链接起来，形
+成一个输出的可执行文件。实际上，所有的编译系统都提供一种机制，将所有相关的目标
+模块打包成为一个单独的文件，称为静态库 (static library), 它可以用做链接器的输入。
+当链接器构造一个输出的可执行文件时，它只复制静态库里被应用程序引用的目标模块。
+
+在 Linux 系统中，静态库以一种称为存档 (archive) 的特殊文件格式存放在磁盘中。存
+档文件是一组连接起来的可重定位目标文件的集合，有一个头部用来描述每个成员目标文
+件的大小和位置。存档文件名由后缀 .a 标识。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{linking/static-linking.png}
+\end{figure}
+
+在符号解析阶段，链接器从左到右按照它们在编译器驱动程序命令行上出现的顺序来扫描可重定位目标文件和存档文件。
+在这次扫描中，链接器维护一个可重定位目标文件的
+集合 EC 这个集合中的文件会被合并起来形成可执行文件），一个未解析的符号（即引用了
+但是尚未定义的符号）集合 U, 以及一个在前面输入文件中已定义的符号集合 D 。
+
+初始时， E 、 U 和 D 均为空。
+
+\begin{itemize}
+    \item 对于命令行上的每个输入文件 f, 链接器会判断 f 是一个目标文件还是一个存档文件。
+          如果 f 是一个目标文件，那么链接器把 f 添加到 E, 修改 U 和 D 来反映 f 中的符号
+          定义和引用，并继续下一个输入文件。
+    \item 如果 f 是一个存档文件，那么链接器就尝试匹配 U 中未解析的符号和由存档文件成员定
+          义的符号。如果某个存档文件成员 m, 定义了一个符号来解析 U 中的一个引用，那么就
+          将 m 加到 E 中，并且链接器修改 U 和 D 来反映 m 中的符号定义和引用。对存档文件中
+          所有的成员目标文件都依次进行这个过程，直到 U 和 D 都不再发生变化。此时，任何不
+          包含在 E 中的成员目标文件都简单地被丢弃，而链接器将继续处理下一个输入文件。
+    \item 如果当链接器完成对命令行上输入文件的扫描后， U 是非空的，那么链接器就会输出一
+          个错误并终止。否则，它会合并和重定位 E 中的目标文件，构建输出的可执行文件。
+\end{itemize}
+
+不幸的是，这种算法会导致一些令人困扰的链接时错误，因为命令行上的库和目标文
+件的顺序非常重要。关于库的一般准则是将它们放在命令行的结尾。如果各个库的成员是相互独立的（也
+就是说没有成员引用另一个成员定义的符号），那么这些库就可以以任何顺序放置在命令
+行的结尾处。如果库不是相互独立的，那么必须对它们排序。
+
+\subsubsection{重定位}
+
+一旦链接器完成了符号解析。此时，链接器就知道它的输入
+目标模块中的代码节和数据节的确切大小。现在就可以开始重定位步骤了，在这个步骤
+中，将合并输入模块，并为每个符号分配运行时地址。
+
+\begin{itemize}
+    \item 重定位节和符号定义：链接器将所有相同类型的节合并为同一类型的
+          新的聚合节。然后，链接器将运行时内存地址赋给新的聚
+          合节，赋给输入模块定义的每个节，以及赋给输入模块定义的每个符号。
+    \item 重定位节中的符号引用：链接器修改代码节和数据节中对每个符号的
+          引用，使得它们指向正确的运行时地址。要执行这一步，链接器依赖于重定位目标
+          模块中称为重定位条目 (relocation entry) 的数据结构。
+\end{itemize}
+
+\paragraph{重定位条目}
+
+当汇编器生成一个目标模块时，它并不知道数据和代码最终将放在内存中的什么位
+置。它也不知道这个模块引用的任何外部定义的函数或者全局变量的位置。所以，无论何
+时汇编器遇到对最终位置未知的目标引用，它就会生成一个重定位条目，告诉链接器在将
+目标文件合并成可执行文件时如何修改这个引用。代码的重定位条目放在 .rel.text 中。
+已初始化数据的重定位条目放在 .rel.data 中。
+
+\begin{lstlisting}[style=CStyle]
+typedef struct {
+    long offset;       /* Offset of the reference to relocate */
+    long type:32,      /* Relocation type */
+         symbol:32;    /* Symbol table index */
+    long addend;       /* Constant part of relocation expression */
+} Elf64_Rela;
+\end{lstlisting}
+
+offset 是需要被修改的引用的节偏移。
+symbol 标识被修改引用应该指向的符号。
+type 告知链接器如何修改新的引用。
+addend 是一个有符号常数，一些类型的重定位要使用它对被修改引用的值做偏移调整。
+
+ELF 定义了 32 种不同的重定位类型，有些相当隐秘。我们只关心其中两种最基本的重定位类型：
+
+\begin{itemize}
+    \item  R\_X86\_64\_PC32: 重定位一个使用 32 位 PC 相对地址的引用。
+    \item  R\_X86\_64\_32: 重定位一个使用 32 位绝对地址的引用。
+\end{itemize}
+
+\paragraph{重定位符号引用}
+
+\begin{lstlisting}[style=CStyle]
+foreach sections {
+    foreach relocation entry r {
+        refptr = s + r.offset; /* ptr to reference to be relocated */
+
+        /* Relocate a PC-relative reference */
+        if (r.type == R_X86_64_PC32) {
+            refaddr = ADDR(s) + r.offset; /* ref's run-time address */
+            *refptr = (unsigned) (ADDR(r.symbol) + r.addend - refaddr);
+        }
+
+        /* Relocate an absolute reference */
+        if (r.type == R_X86_64_32)
+            *refptr = (unsigned) (ADDR(r.symbol) + r.addend);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{可执行目标文件}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{linking/ELF-executable-file-structure.png}
+\end{figure}
+
+可执行目标文件的格式类似于可重定位目标文件的格式。
+ELF 头描述文件的总体格式。它还包括程序的入口点 (entry point) , 也就是当程序运行时要执行的第一条指令的地址。
+.text 、.rodata 和 .data 节与可重定位目标文件中的节是相似的，除了这些节巳经被重定位到它们最终的运行时内存地址以外。
+.init 节定义了一个小函数, 程序的初始化代码会调用它。
+因为可执行文件是完全链接的（已被重定位），所以它不再需要 .rel 节。
+
+ELF 可执行文件被设计得很容易加载到内存，可执行文件的连续的片 (chunk) 被映射
+到连续的内存段。程序头部表 (program header table) 描述了这种映射关系。
+
+\subsubsection{加载可执行目标文件}
+
+加载器将可执行目标文件中的代码和数据从磁盘复制到内存中，然后通过跳转到程序的第一条指令或入口点来运行该程序。这个将程序复制到内存并运行的过程叫做加载。
+
+每个 Linux 程序都有一个运行时内存映像。在 Linux x86-64
+系统中，代码段总是从地址 0x400000 处开始，后面是数据段。运行时堆在数据段之后，
+通过调用 malloc 库往上增长。堆后面的区域
+是为共享模块保留的。用户栈总是从最大的合法用户地址 $2^{48}-1$ 开始，向较小内存地址
+增长。栈上的区域，从地址 $2^{48}$ 开始，是为内核 (kernel) 中的代码和数据保留的，所谓内核
+就是操作系统驻留在内存的部分。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{linking/process-memory-layout.png}
+\end{figure}
+
+\subsection{动态链接}
+
+\subsubsection{加载时动态链接}
+
+共享库 (shared library) 是致力于解决静态库缺陷的一个现代创新产物。共享库是一个
+目标模块，在运行或加载时，可以加载到任意的内存地址，并和一个在内存中的程序链接
+起来。这个过程称为动态链接 (dynamic linking)，是由一个叫做动态链接器 (dynamic linker)
+的程序来执行的。
+
+共享库是以两种不同的方式来共享的。
+首先，在任何给定的文件系统中，对于一个库只有一个 .so 文件。
+所有引用该库的可执行目标文件共享这个 .so 文件中的代码和数据，
+而不是像静态库的内容那样被复制和嵌入到引用它们的可执行的文件中。
+其次，在内存中，一个共享库的 .text 节的一个副本可以
+被不同的正在运行的进程共享。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{linking/dynamic-linking.png}
+\end{figure}
+
+当加载器加载和运行可执行文件 prog21 时，它会注意到 prog21 包含一个 .interp 节，
+这一节包含动态链接器的路径名，动态链接器本身就是一个共享目标（如在 Linux 系统上的 ld-linux.so），
+加载器不会像它通常所做地那样将控制传递给应用，而是加载和运行这个动态链接器。
+然后，动态链接器通过执行下面的重定位完成链接任务：
+\begin{itemize}
+    \item 重定位 libc.so 的文本和数据到某个内存段。
+    \item 重定位 libvector.so 的文本和数据到另一个内存段。
+    \item 重定位 prog21 中所有对由 libc.so 和 libvector.so 定义的符号的引用。
+\end{itemize}
+
+最后，动态链接器将控制传递给应用程序。从这个时刻开始，共享库的位置就固定
+了，并且在程序执行的过程中都不会改变。
+
+\subsubsection{运行时动态链接}
+
+到目前为止，我们巳经讨论了在应用程序被加载后执行前时，动态链接器加载和链接
+共享库的情景。然而，应用程序还可能在它运行时要求动态链接器加载和链接某个共享
+库，而无需在编译时将那些库链接到应用中。
+
+Linux 系统为动态链接器提供了一个简单的接口，允许应用程序在运行时加载和链接共享库。
+
+\begin{lstlisting}[style=CStyle]
+#include <dlfcn.h>
+
+void *dlopen(const char *filename, int flag);
+\end{lstlisting}
+
+dlopen 函数加载和链接共享库 filename 。用已用带 RTLD\_GLOBAL 选项打开了的库
+解析 filename 中的外部符号。如果当前可执行文件是带 -rdynamic 选项编译的，那么对
+符号解析而言，它的全局符号也是可用的。 flag 参数必须要么包括 RTLD\_NOW, 该标志告
+诉链接器立即解析对外部符号的引用，要么包括 RTLD\_LAZY 标志，该标志指示链接器推
+迟符号解析直到执行来自库中的代码。这两个值中的任意一个都可以和 RTLD—GLOBAL 标
+志取或。
+
+\begin{lstlisting}[style=CStyle]
+#include <dlfcn.h>
+
+void *dlsym(void *handle, char *symbol);
+\end{lstlisting}
+
+dlsym 函数的输入是一个指向前面已经打开了的共享库的句柄和一个 symbol 名字，
+如果该符号存在，就返回符号的地址，否则返回 NULL 。
+
+\begin{lstlisting}[style=CStyle]
+#include <dlfcn.h>
+
+int dlclose (void *handle);
+\end{lstlisting}
+
+如果没有其他共享库还在使用这个共享库， dlclose 函数就卸载该共享库。
+
+\begin{lstlisting}[style=CStyle]
+#include <dlfcn.h>
+
+const char *dlerror(void);
+\end{lstlisting}
+
+dlerror 函数返回一个字符串，它描述的是调用 dlopen 、 dlsym 或者 dlclose 函数
+时发生的最近的错误，如果没有错误发生，就返回 NULL 。
+
+\subsubsection{位置无关代码}
+
+可以加载而无需重定位的代码称为位置无关代码 (PIC)。
+
+共享库的一个主要目的就是允许多个正在运行的进程共享内存中相同的库代码，因而节约宝贵的内存资源。
+每个共享库有一个事先预备的专用的地址空间片，然后要求加载器总是在这个地址加载共享库。
+虽然这种方法很简单，但是它也造成了一些严重的问题。 它对地址空间的使用效率
+不高，因为即使一个进程不使用这个库，那部分空间还是会被分配出来。 它也难以管理。
+我们必须保证没有片会重叠。每次当一个库修改了之后，我们必须确认已分配给它的片还
+适合它的大小。如果不适合了，必须找一个新的片。并且，如果创建了一个新的库，我们
+还必须为它寻找空间。
+
+避免这些问题，现代系统以这样一种方式编译共享模块的代码段，使得可以把它们加载到内存的任何位置而无需链接器修改。
+
+\paragraph{PIC 数据引用}
+
+无论我们在内存中的何处加载一个目标模块（包括共享目标模块），数据段与代码段的距离总是保持不变。
+因此，代码段中任何指令和数据段中任何变量之间的距离都是一个运行时常量，与代码段
+和数据段的绝对内存位置是无关的。
+
+利用这个事实，编译器在数据段开始的地方创建了一个表，叫做全局偏移量表 (Global Offset Table, GOT) 。
+在 GOT 中，每个被这个目
+标模块引用的全局数据目标（过程或全局变量）都有一个 8 字节条目。编译器还为 GOT 中
+每个条目生成一个重定位记录。在加载时，动态链接器会重定位 GOT 中的每个条目，使
+得它包含目标的正确的绝对地址。每个引用全局目标的目标模块都有自己的 GOT 。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{linking/PIC-GOT.png}
+\end{figure}
+
+\paragraph{PIC 函数调用}
+
+GNU 编译系统使用延迟绑定 (lazy binding)，将过程地址的绑定推迟到第一次调用该过程时。
+
+延迟绑定是通过两个数据结构之间简洁但又有些复杂的交互来实现的，这两个数据结
+构是： GOT 和过程链接表 (Procedure Linkage Table, PLT) 。如果一个目标模块调用定义
+在共享库中的任何函数，那么它就有自己的 GOT 和 PLT 。 GOT 是数据段的一部分，而
+PLT 是代码段的一部分。
+
+\begin{itemize}
+    \item 过程链接表 (PLT) 。 PLT 是一个数组，其中每个条目是 16 字节代码。 PLT[0] 是一
+          个特殊条目，它跳转到动态链接器中。每个被可执行程序调用的库函数都有它自己
+          的 PLT 条目。每个条目都负责调用一个具体的函数。 PLT[1] 调用系统启动函数 (\_\_libc\_start\_main),
+          它初始化执行环境，调用 main 函数并处理其返回值。从 PLT[2] 开始的条目调用用户代码调用的函数。
+    \item 全局偏移量表 (GOT) 。 GOT 是一个数组，其中每个条目是 8 字
+          节地址。和 PLT 联合使用时， GOT [0] 和 GOT[1] 包含动态链接器在解析函数地址时
+          会使用的信息。 GOT[2] 是动态链接器在 ld-linux.so 模块中的入口点。其余的每
+          个条目对应千一个被调用的函数，其地址需要在运行时被解析。每个条目都有一个
+          相匹配的 PLT 条目。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{linking/PIC-PLT-GOT.png}
+\end{figure}
+
+在 addvec 被第一次调用时，延迟解析它的运行时地址：
+\begin{itemize}
+    \item 不直接调用 addvec, 程序调用进入 PLT[2], 这是 addvec 的 PLT 条目。
+    \item 第一条 PLT 指令通过 GOT[4] 进行间接跳转。因为每个 GOT 条目初始时
+          都指向它对应的 PLT 条目的第二条指令，这个间接跳转只是简单地把控制传送回
+          PLT[2] 中的下一条指令。
+    \item 在把 addvec 的 ID(Oxl) 压入栈中之后， PLT[2] 跳转到 PLT[0]。
+    \item PLT[0] 通过 GOT[1] 间接地把动态链接器的一个参数压入栈中，然后通过
+          GOT[2] 间接跳转进动态链接器中。动态链接器使用两个栈条目来确定 addvec 的运
+          行时位置，用这个地址重写 GOT[4], 再把控制传递给 addvec 。
+\end{itemize}
+
+后续再调用 addvec 时：
+\begin{itemize}
+    \item 控制传递到 PLT[2] 。
+    \item 这次通过 GOT[4] 的间接跳转会将控制直接转移到 addvec 。
+\end{itemize}
+
+\subsection{库打桩机制}
+
+Linux 链接器支持一个很强大的技术，称为库打桩 (library interpositioning), 它允许
+你截获对共享库函数的调用，取而代之执行自己的代码。使用打桩机制，你可以追踪对某
+个特殊库函数的调用次数，验证和追踪它的输入和输出值，或者甚至把它替换成一个完全
+不同的实现。
+
+\begin{itemize}
+    \item 编译时打桩：通过在编译时链接一个自定义的共享库来覆盖标准库函数。
+    \item 链接时打桩：通过在链接时指定一个自定义的共享库来覆盖标准库函数。
+    \item 运行时打桩：通过设置环境变量 LD\_PRELOAD 来指定一个自定义的共享库，该库在加载其他共享库之前被加载，从而覆盖标准库函数。
+\end{itemize}
+
+\subsection{处理目标文件的工具}
+
+在 Linux 系统中，有许多工具可以用来处理目标文件和共享库。以下是一些常用的工具：
+
+\begin{itemize}
+    \item \texttt{objdump}：用于显示目标文件的汇编代码、符号表和重定位信息等。
+    \item \texttt{readelf}：用于显示 ELF 格式的目标文件的各种信息，包括节头、程序头和符号表等。
+    \item \texttt{nm}：用于列出目标文件中的符号，包括函数和变量的名称及其地址。
+    \item \texttt{ldd}：用于显示一个可执行文件或共享库所依赖的共享库列表。
+    \item \texttt{ar}：用于创建、修改和提取静态库文件中的目标模块。
+    \item \texttt{strip}：用于删除目标文件中的符号表和调试信息，以减小文件大小。
+    \item \texttt{strings}：用于提取目标文件中的可打印字符串，常用于调试和分析。
+    \item \texttt{size}：用于显示目标文件中各个节的大小和总大小。
+\end{itemize}
