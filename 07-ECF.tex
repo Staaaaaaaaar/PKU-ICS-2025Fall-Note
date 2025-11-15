@@ -9,15 +9,15 @@
     \includegraphics[width=0.6\textwidth]{ECF/exception.png}
 \end{figure}
 
-在处理器中，状态被编码为不同的位和信号。状态变化称为事件 (event) 。 
+在处理器中，状态被编码为不同的位和信号。状态变化称为事件 (event) 。
 在任何情况下，当处理器检测到有事件发生时，它就会通过一张叫做异常表 (exception table) 的跳转表，
 进行一个间接过程调用（异常），到一个专门设计用来处理这类事件
 的操作系统子程序（异常处理程序 (exception handler)）。当异常处理程序完成处理后，根
 据引起异常的事件的类型，会发生以下 3 种情况中的一种：
 \begin{itemize}
-  \item 处理程序将控制返回给当前指令，即当事件发生时正在执行的指令。
-  \item 处理程序将控制返回给下一条指令， 如果没有发生异常将会执行的下一条指令。
-  \item 处理程序终止被中断的程序。
+    \item 处理程序将控制返回给当前指令，即当事件发生时正在执行的指令。
+    \item 处理程序将控制返回给下一条指令， 如果没有发生异常将会执行的下一条指令。
+    \item 处理程序终止被中断的程序。
 \end{itemize}
 
 \subsubsection{异常处理}
@@ -40,11 +40,11 @@
 异常类似于过程调用，但是有一些重要的不同之处：
 \begin{itemize}
     \item 过程调用时，在跳转到处理程序之前，处理器将返回地址压入栈中。然而，根据异
-常的类型，返回地址要么是当前指令（当事件发生时正在执行的指令），要么是下一
-条指令（如果事件不发生，将会在当前指令后执行的指令）。
+          常的类型，返回地址要么是当前指令（当事件发生时正在执行的指令），要么是下一
+          条指令（如果事件不发生，将会在当前指令后执行的指令）。
     \item 处理器也把一些额外的处理器状态压到栈里，在处理程序返回时，重新开始执行被
-中断的程序会需要这些状态。比如， x86-64 系统会将包含当前条件码的 EFLAGS
-寄存器和其他内容压入栈中。
+          中断的程序会需要这些状态。比如， x86-64 系统会将包含当前条件码的 EFLAGS
+          寄存器和其他内容压入栈中。
     \item 如果控制从用户程序转移到内核，所有这些项目都被压到内核栈中，而不是压到用户栈中。
     \item 异常处理程序运行在内核模式下，这意味着它们对所有的系统资源都有完全的访问权限。
 \end{itemize}
@@ -56,7 +56,7 @@
 
 \subsubsection{异常处理的类别}
 
-异常可以分为四类：中断 (interrupt) 、陷阱 (trap) 、故障 (fault) 和终止 (abort) 。 
+异常可以分为四类：中断 (interrupt) 、陷阱 (trap) 、故障 (fault) 和终止 (abort) 。
 
 \begin{figure}[H]
     \centering
@@ -125,7 +125,7 @@ SRAM 位被损坏时发生的奇偶错误。终止处理程序从不将控制返
 
 一个逻辑流的执行在时间上与另一个流重叠，称为并发流 (concurrent flow) ，这两个
 流被称为并发地运行。更准确地说，流 X 和 Y 互相并发，当且仅当 X 在 Y 开始之后和 Y
-结束之前开始，或者 Y 在 X 开始之后和 X 结束之前开始。 
+结束之前开始，或者 Y 在 X 开始之后和 X 结束之前开始。
 
 \begin{figure}[H]
     \centering
@@ -223,9 +223,9 @@ pid_t getppid(void);
 \begin{itemize}
     \item 运行：进进程要么在 CPU 上执行，要么在等待被执行且最终会被内核调度。
     \item 停止：进程的执行被挂起 (suspended)， 且不会被调度。当收到 SIGSTOP 、 SIGTSTP 、 SIGTTIN 或者 SIGTTOU 信号时，进程就停止，并且保持停止直到它收到
-一个 SIGCONT 信号，在这个时刻，进程再次开始运行。
+          一个 SIGCONT 信号，在这个时刻，进程再次开始运行。
     \item 终止：进程永远地停止了。进程会因为三种原因终止：收到一个信号，该信号的
-默认行为是终止进程；从主程序返回；调用 exit 函数。
+          默认行为是终止进程；从主程序返回；调用 exit 函数。
 \end{itemize}
 
 \begin{lstlisting}[style=CStyle]
@@ -293,10 +293,10 @@ pid_t waitpid(pid_t pid， int *statusp， int options);
 
 可以通过设置 options 来修改默认行为：
 \begin{itemize}
-    \item WNOHANG: 如果等待集合中的任何子进程都还没有终止，那么就立即返回（返回值为 0）。
-    \item WUNTRACED: 挂起调用进程的执行，直到等待集合中的一个进程变成巳终止或者被停止。返回的 PID 为导致返回的巳终止或被停止子进程的 PID 。
-    \item WCONTINUED: 挂起调用进程的执行，直到等待集合中一个正在运行的进程终止或等待集合中一个被停止的进程收到 SIGCONT 信号重新开始执行。
-    \item WNOHANG | WUNTRACED: 立即返回，如果等待集合中的子进程都没有被停止或终止，则返回值为 0；如果有一个停止或终止，则返回值为该子进程的 PID 。 
+    \item \texttt{WNOHANG}: 如果等待集合中的任何子进程都还没有终止，那么就立即返回（返回值为 0）。
+    \item \texttt{WUNTRACED}: 挂起调用进程的执行，直到等待集合中的一个进程变成巳终止或者被停止。返回的 PID 为导致返回的巳终止或被停止子进程的 PID 。
+    \item \texttt{WCONTINUED}: 挂起调用进程的执行，直到等待集合中一个正在运行的进程终止或等待集合中一个被停止的进程收到 SIGCONT 信号重新开始执行。
+    \item \texttt{WNOHANG | WUNTRACED}: 立即返回，如果等待集合中的子进程都没有被停止或终止，则返回值为 0；如果有一个停止或终止，则返回值为该子进程的 PID 。
 \end{itemize}
 
 \paragraph{检查己回收子进程的退出状态}
@@ -365,58 +365,581 @@ execve 函数加载并运行可执行目标文件 filename, 且带参数列表 a
 \end{figure}
 
 \begin{sidenote}{程序和进程}
-程序是一堆代码和数据；程序可以作为目标文件存在于磁盘上，或者作为段存在于地址空间
-中。进程是执行中程序的一个具体的实例；程序总是运行在某个进程的上下文中。
-fork 函数在新的子进程中运行相同的程序，新的子进程是父进程的一个复制品。
-execve 函数在当前进程的上下文中加载并运行一个新的程序。
-它会覆盖当前进程的地址空间，但并没有创建一个新进程。 
+    程序是一堆代码和数据；程序可以作为目标文件存在于磁盘上，或者作为段存在于地址空间
+    中。进程是执行中程序的一个具体的实例；程序总是运行在某个进程的上下文中。
+    fork 函数在新的子进程中运行相同的程序，新的子进程是父进程的一个复制品。
+    execve 函数在当前进程的上下文中加载并运行一个新的程序。
+    它会覆盖当前进程的地址空间，但并没有创建一个新进程。
 \end{sidenote}
 
+\subsection{信号}
+
+一个信号就是一条小消息，它通知进程系统中发生了一个某种类型的事件。号提供了一种机制，通知用户进程发生了这些异常。
+比如：
+\begin{itemize}
+    \item 如果一个进程试图除以 0, 那么内核就发送给它一个 SIGFPE 信号（号码 8）。
+    \item 如果一个进程执行一条非法指令，那么内核就发送给它一个 SIGILL 信号（号码 4）。
+    \item 如果进程进行非法内存引用，内核就发送给它一个 SIGSEGV 信号（号码 11）。
+    \item 如果当进程在前台运行时，你键入 Ctrl+C，那么内核就会发送一个 SIGINT 信号（号码 2）给这个前台进程组中的每个进程。
+    \item 一个进程可以通过向另一个进程发送一个 SIGKILL 信号（号码 9）强制终止它。
+    \item 当一个子进程终止或者停止时，内核会发送一个 SIGCHLD 信号（号码 17）给父进程。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{ECF/signal-table.png}
+\end{figure}
+
+传送一个信号到目的进程是由两个不同步骤组成的：
+\begin{itemize}
+    \item 发送信号：内核通过更新目的进程上下文中的某个状态，发送（递送）一个信号给目
+          的进程。发送信号可以有如下两种原因：内核检测到一个系统事件，比如除零错
+          误或者子进程终止。一个进程调用了 Kill 函数，显式地要求
+          内核发送一个信号给目的进程。一个进程可以发送信号给它自己。
+    \item 接收信号：当目的进程被内核强迫以某种方式对信号的发送做出反应时，它就接收了
+          信号。进程可以忽略这个信号，终止或者通过执行一个称为信号处理程序 (signal handler) 的用户层函数捕获这个信号。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ECF/signal-handle.png}
+\end{figure}
+
+一个发出而没有被接收的信号叫做待处理信号 (pending signal) 。在任何时刻，一种类
+型至多只会有一个待处理信号。如果一个进程有一个类型为 k 的待处理信号，那么任何接
+下来发送到这个进程的类型为 k 的信号都不会排队等待；它们只是被简单地丢弃。一个进
+程可以有选择性地阻塞接收某种信号 。 当一种信号被阻塞时，它仍可以被发送，但是产生
+的待处理信号不会被接收，直到进程取消对这种信号的阻塞 。
+
+一个待处理信号最多只能被接收一次。内核为每个进程在 pending 位向量中维护着
+待处理信号的集合，而在 blocked 位向量中维护着被阻塞的信号集合。只要传送了一个
+类 类型为 k 的信号，内核就会设置 pending 中的第 k 位，而只要接收了一个类型为 k 的信
+号 ，内核就会清除 pending 中的第 k 位。
+
+\subsubsection{发送信号}
+
+\paragraph{进程组}
+
+每个进程都只属千一个进程组，进程组是由一个正整数进程组 ID 来标识的 。 getpgrp
+函数返回当前进程的进程组 ID：
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+pid_t getpgrp(void);
+\end{lstlisting}
+
+默认地，一个子进程和它的父进程同属千一个进程组。一个进程可以通过使用 setpgid 函数来改变自己或者其他进程的进程组：
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+int setpgid(pid_t pid, pid_t pgid);
+\end{lstlisting}
+
+setpgid 函数将进程 pid 的进程组改为 pgid 。 如果 pid 是 0, 那么就使用当前进程
+的 PID 。 如果 pgid 是 0，那么就用 pid 指定的进程的 PID 作为进程组 ID 。
+
+\paragraph{用 /bin/kill 程序发送信号}
+
+/bin/kill 程序可以向另外的进程发送任意的信号。
+
+发送信号 9(SIGKILL) 给进程 15213 ：
+
+\begin{lstlisting}
+/bin/kill -9 15213
+\end{lstlisting}
+
+发送一个 SIGKILL 信号给进程组 15213 中的每个进程：
+
+\begin{lstlisting}
+/bin/kill -9 -15213
+\end{lstlisting}
+
+\paragraph{从键盘发送信号}
+
+Unix shell 使用作业 (job) 这个抽象概念来表示为对一条命令行求值而创建的进程 。 在
+任何时刻，至多只有一个前台作业和 0 个或多个后台作业。shell 为每个作业创建一 个独立的进程组。进程
+组 ID 通常取自作业中父进程中的一个。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ECF/job.png}
+\end{figure}
+
+在键盘上输入 Ctrl+C 会导致内核发送一个 SIGINT 信号到前台进程组中的每个进
+程。默认情况下，结果是终止前台作业。类似地，输入 Ctrl + Z 会发送一个 SIGTSTP 信
+号到前台进程组中的每个进程。默认情况下，结果是停止（挂起）前台作业。
+
+\paragraph{用 kill 函数发送信号}
+
+进程通过调用 kill 函数发送信号给其他进程（包括它们自己）。
+
+\begin{lstlisting}[style=CStyle]
+#include <sys/types.h>
+#include <signal.h>
+
+int kill(pid_t pid, int sig);
+\end{lstlisting}
+
+如果 pid 大于零，那么 kill 函数发送信号号码 sig 给进程 pid。如果 pid 等于零，那么
+kill 发送信号 sig 给调用进程所在进程组中的每个进程，包括调用进程自己。如果 pid
+小于零， kill 发送信号 sig 给进程组 |pid| （pid 的绝对值）中的每个进程 。
+
+\paragraph{用 alarm 函数发送信号}
+
+进程可以通过调用 alarm 函数向它自己发送 SIGALRM 信号。
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+unsigned int alarm(unsigned int secs);
+\end{lstlisting}
+
+alarm 函数安排内核在 secs 秒后发送一个 SIGALRM 信号给调用进程。如果 secs
+是零，那么不会调度安排新的闹钟 (alarm) 。在任何情况下，对 alarm 的调用都将取消任
+待处理的 (pending) 闹钟，并且返回待处理的闹钟还剩下的秒数（如果这
+次对 alarm 的调用没有取消它的话 ） ；如果没有任何待处理的闹钟，就返回零。
+
+\subsubsection{接收信号}
+
+当内核把进程 p 从内核模式切换到用户模式时，它会检查进程 p 的未被阻塞的待处理信号的集合 (pending \& blocked)。
+如果集合是非空的，那么内核选择集合中的某个信号 k （通常是最小的 k），
+并且强制 p 接收信号 k 。 收到这个信号会触发进程采取某种行为 。 一旦进程完成了这个行
+为，那么控制就传递回 p 的逻辑控制流中的下一条指令 $I_{next}$ 。每个信号类型都有一个预
+定义的默认行为，是下面中的一种：
+
+\begin{itemize}
+    \item 进程终止。
+    \item 进程终止并转储内存。
+    \item 进程停止（挂起）直到被 SIGCONT 信号重启。
+    \item 进程忽略该信号。
+\end{itemize}
+
+进程可以通过使用 signal 函数修改和信号相关联的默认行为。
+
+唯一的例外是 SIGSTOP 和 SIGKILL，它们的默认行为是不能修改的 。
+
+\begin{lstlisting}[style=CStyle]
+#include <signal.h>
+typedef void (*sighandler_t)(int);
+
+sighandler_t signal(int signum, sighandler_t handler);
+\end{lstlisting}
+
+signal 函数可以通过下列三种方法之一 来改变和信号 signum 相关联的行为：
+\begin{itemize}
+    \item 如果 handler 是 SIG\_IGN, 那么进程就忽略信号 signum 。
+    \item 如果 handler 是 SIG\_DFL, 那么进程就恢复信号 signum 的默认行为。
+    \item 否则， handler 必须是一个指向用户定义的信号处理程序函数的指针。当进程接收
+          信号 signum 时，内核就会调用这个函数。调用信号处理程序被称为捕获信号。执行信号处理程序被称为处理信号。
+\end{itemize}
+
+信号处理程序可以被其他信号处理程序中断。
+
+\paragraph{阻塞和解除阻塞信号}
+
+Linux 提供阻塞信号的隐式和显式的机制：
+\begin{itemize}
+    \item 隐式阻塞机制。内核默认阻塞任何当前处理程序正在处理信号类型的待处理的信号。
+    \item 显式阻塞机制。应用程序可以使用 sigprocmask 函数和它的辅助函数，明确地阻塞和解除阻塞选定的信号。
+\end{itemize}
+
+\begin{lstlisting}[style=CStyle]
+#include <signal.h>
+
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+int sigemptyset(sigset_t *set);
+int sigfillset(sigset_t *set);
+int sigaddset(sigset_t *set, int signum);
+int sigdelset(sigset_t *set, int signum);
+int sigismember(const sigset_t *set, int signum);
+\end{lstlisting}
+
+sigprocmask 函数改变当前阻塞的信号集合。具体的行为依赖于 how 的值：
+\begin{itemize}
+    \item SIG\_BLOCK: 把 set 中的信号添加到 blocked 中。
+    \item SIG\_UNBLOCK: 从 blocked 中删除 set 中的信号。
+    \item SIG\_SETMASK: block=set 。
+\end{itemize}
+
+如果 oldset 非空，那么 blocked 位向量之前的值保存在 oldset 中。
+
+使用下述函数对 set 信号集合进行操作： sigemptyset 初始化 set 为空集合。 sigfillset
+函数把每个信号都添加到 set 中。 sigaddset 函数把 signum 添加到 set, sigdelset 从 set 中
+删除 signum, 如果 signum 是 set 的成员，那么 sigismember 返回 1, 否则返回 0 。
+
+\subsubsection{编写信号处理程序}
+
+\paragraph{安全的信号处理}
+
+信号处理程序很麻烦是因为它们和主程序以及其他信号处理程序并发地运行。
+如果处理程序和主程序并发地访问同样的全局数据结构，那么结果可能就不可预知，而且经常是致命的。
+
+\begin{itemize}
+    \item 处理程序要尽可能简单。避免麻烦的最好方法是保持处理程序尽可能小和简单。
+    \item 在处理程序中只调用异步信号安全的函数。所异步信号安全的函数（或简称安全的函数），要么它是可重入的（例如只访问局部变量），要么它不能被信号处理程序中断。
+
+          注意，许多常见的函数（例如 printf、 sprintf 、 malloc 和 exit）都不是异步信号安全的。
+
+          信号处理程序中产生输出唯一安全的方法是使用 write 函数。
+
+    \item 使保存和恢复 errno 。注意，只有在处理程序要返回时才有此必要。如果处理程序调用 \_exit 终止该进程，那么就不需要这样做了。
+    \item 阻塞所有的信号，保护对共享全局数据结构的访问。
+    \item 用 volatile 声明全局变量。volatile 限定符强迫编译器每次在代码中引用 g 时，都要从内存中读取 g 的值。
+    \item 用 sig\_atomic\_t 声明标志。
+\end{itemize}
+
+\paragraph{正确的信号处理}
+
+信号的一个与直觉不符的方面是未处理的信号是不排队的。因为 pending 位向量中
+每种类型的信号只对应有一位，所以每种类型最多只能有一个未处理的信号。因此，如果
+两个类型 k 的信号发送给一个目的进程，那么第二个信号就简单地被丢弃了；它不会排队。
+
+解决这一问题的关键思想是，如果存在一个未处理的信号就表明至少有一个信号到达了。
+
+\paragraph{可移植的信号处理}
+
+Unix 信号处理的另一个缺陷在于不同的系统有不同的信号处理语义。
+
+\begin{itemize}
+    \item signal 函数的语义各有不同。有些老的 Unix 系统在信号 k 被处理程序捕获之后就
+          把对信号 k 的反应恢复到默认值。在这些系统上，每次运行之后，处理程序必须调
+          用 signal 函数，显式地重新设置它自己。
+    \item 系统调用可以被中断 。 像 read 、 write 和 accept 这样的系统调用潜在地会阻塞进
+          程 一 段较长的时间，称为慢速系统调用 。 在某些较早版本的 Unix 系统中，当处理
+          程序捕获到一个信号时，被中断的慢速系统调用在信号处理程序返回时不再继续，
+          而是立即返回给用户一个错误条件，并将 errno 设置为 EINTR 。在这些系统上，
+          程序员必须包括手动 重 启被中断的系统调用的代码 。
+\end{itemize}
+
+要解决这些问题， Posix 标准定义了 sigaction 函数，它允许用户在设置信号处理
+时，明确指定他们想要的信号处理语义。
+
+\begin{lstlisting}[style=CStyle]
+#include <signal.h>
+
+int sigaction(int signum, struct sigaction *act, struct sigaction *oldact);
+\end{lstlisting}
+
+\subsubsection{同步流以避免讨厌的并发错误}
+
+示例程序中，父进程在一个全局作业列表中记录着它的当前子进程，每个作业一个条目。addjob 和 deletejob 函数分别
+向这个作业列表添加和从中删除作业。
+
+\begin{lstlisting}[style=CStyle]
+/* WARNING: This code is buggy! */
+void handler(int sig)
+{
+    int olderrno = errno ;
+    sigset_t mask_all, prev_all;
+    pid_t pid;
+
+    Sigfillset(&mask_all);
+    while ((pid = waitpid(-1, NULL, 0)) > 0) { /* Reap a zombie child */
+        Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+        deletejob(pid); /* Delete the child from the job list */
+        Sigprocmask (SIG_SETMASK, &prev_all, NULL);
+    }
+    if (errno != ECHILD)
+        Sio_error("waitpid error");
+    errno = olderrno ;
+}
+ 
+int main(int argc, char **argv)
+{
+    int pid;
+    sigset_t mask_all, prev_all;
+
+    Sigfillset (&mask_all);
+    Signal(SIGCHLD, handler);
+    initjobs() ; /* Initialize the job list */
+
+    while (1) {
+        if ((pid = Fork()) == 0) { /* Child process */
+            Execve ("/bin/date", argv, NULL);
+        }
+        Sigprocmask(SIG_BLOCK, &mask_all, &prev_all); /* Parent process */
+        addjob(pid) ; /* Add the child to the job list */
+        Sigprocmask (SIG_SETMASK, &prev_all, NULL);
+    }
+    exit(0);
+}
+\end{lstlisting}
+
+当父进程创建一个新的子进程后，它就把这个子进程添加到作业列表中 。 当父进程在
+SIGCHLD 处理程序中回收一个终止的（僵死）子进程时，它就从作业列表中删除这个子
+进程 。
+
+乍一看，这段代码是对的。不幸的是，可能发生下面这样的事件序列：
+
+1) 父进程执行 fork 函数，内核调度新创建的子进程运行，而不是父进程。
+
+2) 在父进程能够再次运行之前，子进程就终止，并且变成一个 僵 死进程，使得内核
+传递一个 SIGCHLD 信号给父进程 。
+
+3) 后来，当父进程再次变成可运行但又在它执行之前，内核注意到有未处理的
+SIGCHLD 信 号 ，并通过在父进程中运行处理程序接收这个信号 。
+
+4) 信号处理程序回收终止的 子 进程，并调用 deletejob, 这个函数什么也不做，因
+为父进程还没有把该子进程添加到列 表 中 。
+
+5) 在处理程序运行完毕后，内核运行父进程，父进程从 fork 返回，通过调用 addjob 错误地把（不存在的）子进程添加到作业列表中 。
+
+这是一个称为竞争 (race) 的经典同步错误的示例。
+
+一种解决方法是通过在调用 fork 之前，阻塞 SIGCHLD 信号，然后在调用 addjob 之后取消阻塞这些信号，
+我们保证了在子进程被添加到作业列表中之后回收该子进程。注意，子进程继承了它们父进程的被阻塞集合，所以
+我们必须在调用 execve 之前，小心地解除子进程中阻塞的 SIGCHLD 信号。
+
+\begin{lstlisting}[style=CStyle]
+void handler(int sig)
+{
+    int olderrno = errno;
+    sigset_t mask_all, prev_all;
+    pid_t pid;
+
+    Sigfillset(&mask_all);
+    while ((pid = waitpid(-1, NULL, 0)) > 0) { /* Reap a zombie child */
+        Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+        deletejob(pid); /* Delete the child from the job list */
+        Sigprocmask (SIG_SETMASK, &prev_all, NULL) ;
+    }
+    if (errno != ECHILD)
+        Sio_error("waitpid error");
+    errno = olderrno;
+}
+ 
+int main(int argc, char **argv)
+{
+    int pid;
+    sigset_t mask_all, mask_one, prev_one;
+
+    Sigfillset (&mask_all);
+    Sigemptyset(&mask_one);
+    Sigaddset(&mask_one, SIGCHLD);
+    Signal(SIGCHLD, handler);
+    initjobs(); /* Initialize the job list */
+    
+    while (1) {
+        Sigprocmask(SIG_BLOCK, &mask_one, &prev_one); /* Block SIGCHLD */
+        if ((pid = Fork()) == 0) { /* Child process */
+            Sigprocmask(SIG_SETMASK, &prev_one, NULL); /* Unblock SIGCHLD */
+            Execve ("/bin/date", argv, NULL) ;
+        }
+        Sigprocmask(SIG_BLOCK, &mask_all, NULL); /* Parent process */
+        addjob(pid); /* Add the child to the job list */
+        Sigprocmask(SIG_SETMASK, &prev_one, NULL); /* Unblock SIGCHLD */
+    }
+    exit(0);
+}
+\end{lstlisting}
+
+\subsubsection{显式地等待信号}
+
+有时候主程序需要显式地等待某个信号处理程序运行 。 例如，当 Linux shell 创建一个前
+台作业时，在接收下一条用户命令之前，它必须等待作业终止 ，被 SIGCHLD 处理程序回收 。
+
+\begin{lstlisting}[style=CStyle]
+#include "csapp.h"
+
+volatile sig_atomic_t pid;
+
+void sigchld_handler(int s)
+{
+    int olderrno = errno;
+    pid = waitpid(-1, NULL, 0);
+    errno = olderrno;
+}
+ 
+void sigint_handler(int s)
+{
+}
+ 
+int main(int argc, char **argv)
+{
+    sigset_t mask, prev;
+
+    Signal(SIGCHLD, sigchld_handler);
+    Signal(SIGINT, sigint_handler);
+    Sigemptyset(&mask);
+    Sigaddset(&mask, SIGCHLD);
+    
+    while (1) {
+        Sigprocmask(SIG_BLOCK, &mask, &prev); /* Block SIGCHLD */
+        if (Fork() == 0) /* Child */
+            exit(0);
+        
+        /* Wait for SIGCHLD to be received */
+        pid = 0;
+        while (!pid)
+            sigsuspend(&prev);
+
+        /* Optionally unblock SIGCHLD */
+        Sigprocmask (SIG_SETMASK, &prev, NULL) ;
+
+        /* Do some work after receiving SIGCHLD */
+        printf (".") ;
+    }
+    exit(0);
+}
+\end{lstlisting}
+
+如果等待子进程终止的循环体内什么都不做，将会浪费处理器资源。如果在循环体内插入 pause：
+\begin{lstlisting}[style=CStyle]
+while (!pid) /* Race! */
+    pause();
+\end{lstlisting}
+
+注意，我们仍然需要一个循环，因为收到一个或多个 SIGINT 信号 ， pause 会被中
+断。不过，这段代码有很严重的竞争条件：如果在 while 测试后和 pause 之前收到
+SIGCHLD 信号， pause 会永远睡眠。
+
+另 一个选择是用 sleep 替换 pause：
+\begin{lstlisting}[style=CStyle]
+while (!pid)
+    sleep(1);
+\end{lstlisting}
+
+当这段代码正确执行时，它太慢了。如果在 while 之后 pause 之前收到信号，程序
+必须等相当长的 一段时间才会再次检查循环的终止条件。
+
+合适的解决方法是使用 sigsuspend 。
+
+\begin{lstlisting}[style=CStyle]
+#include <signal.h>
+
+int sigsuspend(const sigset_t *mask);
+\end{lstlisting}
+
+sigsuspend 函数暂时用 mask 替换当前的阻塞集合，然后挂起该进程，直到收到一
+个信号，其行为要么是运行一个处理程序，要么是终止该进程。如果它的行为是终止，那
+么该进程不从 sigsuspend 返回就直接终止。如果它的行为是运行一个处理程序，那么
+sigsuspend 从处理程序返回，恢复调用 sigsuspend 时原有的阻塞集合。
+
+\subsection{非本地跳转}
+
+C 语言提供了一种用户级异常控制流形式，称为非本地跳转 (nonlocal jump), 它将控
+制直接从一个函数转移到另一个当前正在执行的函数，而不需要经过正常的调用返回序
+列。非本地跳转是通过 setjmp 和 longjmp 函数来提供的 。
+\begin{lstlisting}[style=CStyle]
+#include <setjmp.h>
+
+int setjmp(jmp_buf env);
+int sigsetjmp(sigjmp_buf env, int savesigs);
+\end{lstlisting}
+
+setjmp 函数在 env 缓冲区中保存当前调用环境，以供后面的 longjmp 使用，并返回
+0 。调用环境包括程序计数器、栈指针和通用目的寄存器。setjmp 返回的值不能被赋值给变量。
+
+\begin{lstlisting}[style=CStyle]
+#include <setjmp.h>
+
+void longjmp(jmp_buf env, int retval);
+void siglongjmp(sigjmp_buf env, int retval);
+\end{lstlisting}
+
+longjmp 函数从 env 缓冲区中恢复调用环境，然后触发 一 个从最近一次初始化 env
+的 setjmp 调用的返回。然后 setjmp 返回，并带有非零的返回值 retval 。
+
+第一眼看过去， setjmp 和 longjmp 之间的相互关系令人迷惑。
+setjmp 函数只被调用 一 次，但返回多次：一次是当第一次调用 setjmp，而调用环境保存在缓冲区 env 中时，
+一次是为每个相应的 longjmp 调用。另一方面，longjmp 函数被调用一次，但从不返回。
+
+非本地跳转的一个重要应用就是允许从一个深层嵌套的函数调用中立即返回，通常是
+由检测到某个错误情况引起的。如果在一个深层嵌套的函数调用中发现了一个错误情况，
+我们可以使用非本地跳转直接返回到一个普通的本地化的错误处理程序，而不是费力地解
+开调用栈。
+
+longjmp 允许它跳过所有中间调用的特性可能产生意外的后果。例如，如果中间函数
+调用中分配了某些数据结构，本来预期在函数结尾处释放它们，那么这些释放代码会被跳
+过，因而会产生内存泄漏。
+
+\begin{lstlisting}[style=CStyle]
+#include "csapp.h"
+
+jmp_buf buf;
+
+int error1 = 0;
+int error2 = 1;
+
+void foo(void), bar(void);
+
+int main()
+{
+    switch(setjmp(buf)) {
+    case 0:
+        foo();
+        break;
+    case 1:
+        printf("Detected an error! condition in foo\n");
+        break;
+    case 2:
+        printf ("Detected an error2 condition in foo\n");
+        break;
+    default:
+        printf("Unknown error condition in foo\n");
+    }
+    exit(0);
+}
+
+/* Deeply nested function foo */
+void foo(void)
+{
+    if (error1)
+        longjmp(buf, 1);
+    bar();
+}
+
+void bar(void)
+{
+    if (error2)
+        longjmp(buf, 2);
+}
+\end{lstlisting}
+
+非本地跳转的另一个重要应用是使一个信号处理程序分支到一个特殊的代码位置，而不
+是返回到被信号到达中断了的指令的位置。
 
 
+\begin{lstlisting}[style=CStyle]
+#include "csapp.h"
 
+sigjmp_buf buf;
 
+void handler(int sig)
+{
+    siglongjmp(buf, 1);
+}
+int main()
+{
+    if (!sigsetjmp(buf, 1)) {
+        Signal(SIGINT, handler);
+        Sio_puts("starting\n");
+    }
+    else
+        Sio_puts("restarting\n");
 
+    while(1) {
+        Sleep(1);
+        Sio_puts ("processing .. . \n") ;
+    }
+    exit(0); /* Control never reaches here */
+}
+\end{lstlisting}
 
+当用户在键盘上键入 Ctrl+C 时，这个程序用信号和非本地跳转来实现软重启。
+sigsetjmp 和 siglongjmp 函数是 setjmp 和 longjmp 的可以被信号处理程序使用的版本。
 
+在程序第一次启动时，对 sigsetjmp 函数的初始调用保存调用环境和信号的上下文
+（包括待处理的和被阻塞的信号向量）。随后，主函数进入一个无限处理循环。当用户键入
+Ctrl+C 时，内核发送一个 SIGINT 信号给这个进程，该进程捕获这个信号。不是从信号
+处理程序返回，如果是这样那么信号处理程序会将控制返回给被中断的处理循环，实际上，
+处理程序完成一个非本地跳转，回到 main 函数的开始处。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+为了避免竞争，必须在调用了 sigsetjmp 之后再设置处理程序。
+否则，就会冒在初始调用 sigsetjmp 为 siglongjmp 设置调用环境之前运行处理程序的风险。
+其次， sigsetjmp 和 siglongjmp 函数不在异步信号安全的函数之列。
+原因是一般来说 siglongjmp 可以跳到任意代码，所以我们必须小心，只在 siglongjmp 可达的代码中调用安全的函数。
 
 \newpage
