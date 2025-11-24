@@ -1,0 +1,282 @@
+\section{系统级 I/O}
+
+\subsection{文件操作}
+
+\subsubsection{文件}
+
+每个 Linux 文件都有一个类型 (type) 来表明它在系统中的角色：
+\begin{itemize}
+    \item 普通文件 (regular file)：包含用户数据的文件。
+    \item 目录 (directory)：包含一组链接 (link) 的文件，其中每个链接都将一个文件名 (filename) 映射到一个文件，这个文件可能是另一个目录。
+    \item 套接字 (socket)：用于进程间通信 (IPC) 的文件。
+\end{itemize}
+
+其他文件类型包含命名通道 (named pipe) 、符号链接 (symbolic link), 以及字符和块设备 (character and block device) 文件等。
+
+目录层次结构中的位 置用路径名 (pathname) 来指定 。 路径名是一个字符串，包括一个
+可选斜杠，其后紧跟一系列的文件名，文件名之间用斜杠分隔 。 路径名有两种形式：
+\begin{itemize}
+    \item 绝对路径名 (absolute pathname)：以根目录 (root directory) 的斜杠开头的路径名。
+    \item 相对路径名 (relative pathname)：不以斜杠开头的路径名，相对于当前工作目录 (current working directory) 。
+\end{itemize}
+
+\subsubsection{Unix I/O}
+
+所有的 I/O 设备（例如网络、磁盘和终端）都被模型化为文件，而所有的输入和输出都被当
+作对相应文件的读和写来执行。这种将设备优雅地映射为文件的方式，允许 Linux 内核引
+出一个简单、低级的应用接口，称为 Unix I/O，这使得所有的输入和输出都能以一种统
+一且一致的方式来执行：
+\begin{itemize}
+    \item 打开文件。一个应用程序通过要求内核打开相应的文件，来宣告它想要访问一个
+          I/O 设备。内核返回一个小的非负整数，叫做描述符，它在后续对此文件的所有操
+          作中标识这个文件。内核记录有关这个打开文件的所有信息。应用程序只需记住这
+          个描述符。
+    \item Linux shell 创建的每个进程开始时都有 三个打开的文件：标准扴入（描述符为 0）、标准
+          扴出（描述符为 1） 和标准错误（描述符为 2） 。
+    \item 改变当前的文件位置。对于每个打开的文件，内核保持着一个文件位置 k，初始为
+          0 。这个文件位置是从文件开头起始的字节偏k移量。应用程序能够通过执行 seek 操
+          作，显式地设置文件的当前位置为 k 。
+    \item 读写文件。应用程序通过读和写操作来从打开的文件中读入数据或向其写出数据。每
+          次读或写操作都会从或向当前文件位置 k 处开始，并且会相应地更新 k 的值。
+    \item 关闭文件。应用程序通过关闭操作来关闭一个打开的文件。内核释放与这个打开的
+          文件相关的所有资源。
+\end{itemize}
+
+\subsubsection{打开和关闭文件}
+
+\begin{lstlisting}[style=CStyle]
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int open(char *filename, int flags, mode_t mode);
+\end{lstlisting}
+
+open 函数将 filename 转换为一个文件描述符，并且返回描述符数字。返回的描述符总
+是在进程中当前没有打开的最小描述符。 flags 参数指明了进程打算如何访问这个文件：
+\begin{itemize}
+    \item O\_RDONLY：只读打开文件。
+    \item O\_WRONLY：只写打开文件。
+    \item O\_RDWR：读写打开文件。
+\end{itemize}
+
+flags 参数也可以是一个或者更多位掩码的或，为写提供给一些额外的指示：
+\begin{itemize}
+    \item O\_APPEND：每次写操作都将数据追加到文件末尾。
+    \item O\_CREAT：如果文件不存在，则创建它。
+    \item O\_TRUNC：如果文件已经存在，并且以只写或读写方式打开，则将其长度截断为 0。
+\end{itemize}
+
+mode 参数指定了新文件的访问权限位。
+
+作为上下文的一部分，每个进程都有一个 umask, 它是通过调用 umask 函数来设置
+的 。 当进程通过带某个 mode 参数的 open 函数调用来创建一个新文件时，文件的访问权
+限位被设置为 mode \& $\sim$umask 。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IO/mode.png}
+\end{figure}
+
+进程通过调用 close 函数关闭一个打开的文件。
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+int close(int fd);
+\end{lstlisting}
+
+关闭一个已关闭的描述符会出错。
+
+\subsubsection{读和写文件}
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+ssize_t read(int fd, void *buf, size_t n);
+ssize_t write(int fd, const void *buf, size_t n);
+\end{lstlisting}
+
+read 函数从描述符为 fd 的当前文件位置复制最多 n 个字节到内存位置 buf。返回值 -1
+表示一个错误，而返回值 0 表示 EOF。否则，返回值表示的是实际传送的字节数量。
+
+write 函数从内存位置 buf 复制至多 n 个字节到描述符 fd 的当前文件位置。
+
+在某些情况下， read 和 write 传送的字节比应用程序要求的要少。这些不足值 (short
+count) 不表示有错误。出现这样情况的原因有：
+\begin{itemize}
+    \item 读时遇到 EOF 。
+    \item 从终端读取文本行。
+    \item 读和写网络套接字 (socket) 。
+\end{itemize}
+
+\subsubsection{读取文件元数据}
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+#include <sys/stat.h>
+
+int stat(const char *filename, struct stat *buf);
+int fstat(int fd, struct stat *buf);
+\end{lstlisting}
+
+stat 函数以一个文件名作为输入，并填写 stat 数据结构中的
+各个成员。 fstat 函数是相似的，只不过是以文件描述符而不是文件名作为输入。
+
+\begin{lstlisting}[style=CStyle]
+/* Metadata returned by the stat and fstat functions */
+struct stat {
+    dev_t     st_dev;     /* ID of device containing file */
+    ino_t     st_ino;     /* inode number */
+    mode_t    st_mode;    /* protection */
+    nlink_t   st_nlink;   /* number of hard links */
+    uid_t     st_uid;     /* user ID of owner */
+    gid_t     st_gid;     /* group ID of owner */
+    dev_t     st_rdev;    /* device ID (if special file) */
+    off_t     st_size;    /* total size, in bytes */
+    blksize_t st_blksize; /* blocksize for filesystem I/O */
+    blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
+    time_t    st_atime;   /* time of last access */
+    time_t    st_mtime;   /* time of last modification */
+    time_t    st_ctime;   /* time of last status change */
+};
+\end{lstlisting}
+
+st\_size 成员包含了文件的字节数大小。 st\_mode 成员则编码了文件访问许可位和文件类型。
+
+\subsubsection{读取目录内容}
+
+\begin{lstlisting}[style=CStyle]
+#include <sys/types.h>
+#include <dirent.h>
+
+DIR *opendir(const char *name);
+\end{lstlisting}
+
+函数 opendir 以路径名为参数，返回指向目录流 (directory stream) 的指针。流是对
+条目有序列表的抽象，在这里是指目录项的列表。
+
+\begin{lstlisting}[style=CStyle]
+#include <dirent.h>
+
+struct dirent *readdir(DIR *dirp);
+\end{lstlisting}
+
+每次对 readdir 的调用返回的都是指向流 dirp 中下一个目录项的指针，或者，如果
+没有更多目录项则返回 NULL。每个目录项都是一个结构，其形式如下：
+
+\begin{lstlisting}[style=CStyle]
+struct dirent {
+    ino_t d_ino; /* inode number */
+    char d_name[256]; /* Filename */
+};
+\end{lstlisting}
+
+成员 d\_name 是文件名， d\_ino 是文件位置。
+
+\begin{lstlisting}[style=CStyle]
+#include <dirent.h>
+
+int closedir(DIR *dirp);
+\end{lstlisting}
+
+函数 closedir 关闭流并释放其所有的资源 。
+
+\subsection{共享文件}
+
+内核用三个相关的数据结构来表示打开的文件：
+\begin{itemize}
+    \item 描述符表 (descriptor table) 。每个进程都有它独立的描述符表，它的表项是由进程打开的文件描述符来索引的 。 每个打开的描述符表项指向文件表中的一个表项。
+    \item 文件表 (file table) 。打开文件的集合是由一张文件表来表示的，所有的进程共享这张表。
+          每个文件表的表项组成（针对我们的目的）包括当前的文件位置、引用计数
+          (reference count)（即当前指向该表项的描述符表项数），以及一个指向 v-node 表中
+          对应表项的指针 。 关闭一个描述符会减少相应的文件表表项中的引用计数。内核不
+          会删除这个文件表表项，直到它的引用计数为零。
+    \item v-node 表 (v- node table) 。 同文件表一样，所有的进程共享这张 v-node 表 。 每个表
+          项包含 stat 结构中的大多数信息，包括 st\_mode 和 st\_size 成员。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IO/file-sharing.png}
+\end{figure}
+
+\subsection{I/O 重定向}
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+
+int dup2(int oldfd, int newfd);
+\end{lstlisting}
+
+dup2 函数复制描述符表表项 oldfd 到描述符表表项 newfd, 覆盖描述符表表项 newfd 以前的内容。如果 newfd 已经打开了， dup2 会在复制 oldfd 之前关闭 newfd 。
+
+\subsection{RIO}
+
+RIO(Robust I/O) 库提供了一组用于可靠读写的函数，这些函数封装了 Unix I/O 函数 read 和 write ，以处理不足值和中断等问题。
+
+\subsubsection{无缓冲的输入输出函数}
+
+\begin{lstlisting}[style=CStyle]
+#include "csapp.h"
+
+ssize_t rio_readn(int fd, void *usrbuf, size_t n);
+ssize_t rio_writen(int fd, void *usrbuf, size_t n);
+\end{lstlisting}
+
+rio\_readn 函数从描述符 fd 的当前文件位置最多传送 n 个字节到内存位置 usrbuf 。
+类似地， rio\_writen 函数从位置 usrbuf 传送 n 个字节到描述符 fd 。 rio\_readn 函数在遇
+到 EOF 时只能返回一个不足值。 rio\_writen 函数决不会返回不足值。对同一个描述符，
+可以任意交错地调用 rio\_readn 和 rio\_writen 。
+
+\subsubsection{带缓冲的输入函数}
+
+\begin{lstlisting}[style=CStyle]
+#include "csapp.h"
+
+void rio_readinitb(rio_t *rp, int fd);
+
+ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen);
+ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
+\end{lstlisting}
+
+每打开一个描述符，都需要调用一次 rio\_readinitb 函数。它将描述符 fd 和地址 rp
+处的一个类型为 rio\_t 的读缓冲区联系起来。
+
+rio\_readlineb 函数从文件 rp 读出下一个文本行（包括结尾的换行符），将它复制到
+内存位置 usrbuf, 并且用 NULL 字符来结束这个文本行。 rio\_readlineb 函数最多
+读 maxlen-1 个字节，余下的一个字符留给结尾的 NULL 字符 。 超过 maxlen-1 字节的文
+本行被截断，并用一个 NULL 字符结束。
+
+rio\_readnb 函数从文件 rp 最多读 n 个字节到内存位置 usrbuf 。
+
+对同一描述符，对 rio\_readlineb 和 rio\_readnb 的调用可以任意交叉进行。然而，对这些带缓冲的函数的
+调用却不应和无缓冲的 rio\_readn 函数交叉使用。
+
+\subsection{标准 I/O}
+
+C 语言定义了一组高级输入输出函数，称为标准 I/O 库，为程序员提供了 Unix I/O
+的较高级别的替代。这个库 (libc) 提供了打开和关闭文件的函数 (fopen 和 fclose) 、读
+和写字节的函数 (fread 和 fwrite) 、读和写字符串的函数 (fgets 和 fputs), 以及复杂
+的格式化的 I/O 函数 (scanf 和 printf) 。
+
+标准 I/O 库将一个打开的文件模型化为一个流。对于程序员而言，一个流就是一个指
+向 FILE 类型的结构的指针。每个程序开始时都有三个打开的流 stdin 、 stdout
+和 stderr，分别对应于标准输入、标准输出和标准错误：
+
+\begin{lstlisting}[style=CStyle]
+#include <stdio.h>
+extern FILE *stdin; /* Standard input (descriptor 0) */
+extern FILE *stdout; /* Standard output (descriptor 1) */
+extern FILE *stderr; /* Standard error (descriptor 2) */
+\end{lstlisting}
+
+类型为 FILE 的流是对文件描述符和流缓冲区的抽象 。 流缓冲区的目的和 RIO 读缓冲
+区的一样：就是使开销较高的 Linux I/O 系统调用的数量尽可能得小。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IO/IO-relationship.png}
+\end{figure}
+
+\newpage
