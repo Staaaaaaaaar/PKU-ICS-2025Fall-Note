@@ -163,6 +163,271 @@ VPN 的 t 个最低位组成的，而 TLB 标记 (TLBT) 是由 VPN 中剩余的�
 
 \subsubsection{多级页表}
 
+如果我们有一个 32 位的地址空间、 4KB 的页面和 一 个 4 字节的 PTE, 那么即使应用所引用的只是
+虚拟地址空间中很小的一部分，也总是需要一个 4MB 的页表驻留在内存中。对于地址空间为 64 位的系统来说，问题将变得更复杂。
+
+用来压缩页表的常用方法是使用层次结构的页表。这种方法从两个方面减少了内存要求。
+第一，如果一级页表中的一个 PTE 是空的，那么相应的二级页表就根本不会存在。
+这代表着 一种巨大的潜在节约，因为对于 一个典型的程序， 4GB 的虚拟地址空间的大部分都会是未分配的。
+第二 ，只有一级页表才 需要 总是在主存中；虚拟内存系统可以在需要时创建、页面调入或调出二级页表，这就减少了主存
+的压力；只有最经常使用的二级页表才需要缓存在主存中。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/multi-level-page-table.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/translating-with-k-level-table.png}
+\end{figure}
+
+\subsection{Intel Core i7/Linux 内存系统}
+
+\subsubsection{Core i7 地址翻译}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/i7-memory-system.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/i7-address-translation.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/i7-123-PTE.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/i7-4-PTE.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/i7-PT-translation.png}
+\end{figure}
+
+\subsubsection{Linux 虚拟内存系统}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/Linux-VA-space.png}
+\end{figure}
+
+Linux 将虚拟内存组织成一些区域（也叫做段）的集合 。 一个区域 (area) 就是已经存在
+着的（已分配的）虚拟内存的连续片 (chunk), 这些页是以某种方式相关联的。例如，代码
+段、数据段、堆、共享库段，以及用户栈都是不同的区域。每个存在的虚拟页面都保存在
+某个区域中，而不属于某个区域的虚拟页是不存在的，并且不能被进程引用 。 区域的概念
+很重要，因为它允许虚拟地址空间有间隙。内核不用记录那些不存在的虚拟页，而这样的
+页也不占用内存、磁盘或者内核本身中的任何额外资源 。
+
+核为系统中的每个进程维护一个单独的任务结构（源代码中的 task\_struct ）。任务结构中的元素包含或者指
+向内核运行该进程所需要的所有信息（例如， PID 、指向用户栈的指针、可执行目标文件的
+名字，以及程序计数器） 。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/Linux-VM-organization.png}
+\end{figure}
+
+任务结构中的一个条目指向 mm\_struct, 它描述了虚拟内存的当前状态 。 我们感兴趣的
+两个字段是 pgd 和 mmap, 其中 pgd 指向第一级页表（页全局目录）的基址，而 mmap 指向一个
+vm\_area\_structs （区域结构）的链表，其中每个 vm\_area\_structs 都描述了当前虚拟地址空
+间的一个区域。当内核运行这个进程时，就将 pgd 存放在 CR3 控制寄存器中。
+
+一个具体区域的区域结构包含下面的字段：
+\begin{itemize}
+    \item vm\_start: 指向这个区域的起始处 。
+    \item vm\_end: 指向这个区域的结束处 。
+    \item vm\_prot: 描述这个区域内包含的所有页的读写许可权限。
+    \item vm\_flags: 描述这个区域内的页面是与其他进程共享的，还是这个进程私有的（还描述了其他一些信息）。
+    \item vm\_next: 指向链表中下一个区域结构。
+\end{itemize}
+
+\paragraph{Linux 缺页异常处理}
+
+假设 MMU 在试图翻译某个虚拟地址 A 时，触发了一个缺页 。 这个异常导致控制转
+移到内核的缺页处理程序，处理程序随后就执行下面的步骤：
+\begin{enumerate}
+    \item 虚拟地址 A 是合法的吗？换句话说， A 在某个区域结构定义的区域内吗？为了回
+          答这个问题，缺页处理程序搜索区域结构的链表，把 A 和每个区域结构中的 vm\_start 和
+          vm\_end 做比较。如果这个指令是不合法的，那么缺页处理程序就触发一个段错误，从而
+          终止这个进程。
+    \item  试图进行的内存访问是否合法？换句话说，进程是否有读、写或者执行这个区域
+          内页面的权限？如果试图进行的访问是不合法的，那么缺页处理程序会触发一个保护
+          异常，从而终止这个进程。
+    \item 此刻，内核知道了这个缺页是由千对合法的虚拟地址进行合法的操作造成的。它是
+          这样来处理这个缺页的：选择一个牺牲页面，如果这个牺牲页面被修改过，那么就将它交换
+          出去，换入新的页面并更新页表 。 当缺页处理程序返回时， CPU 重新启动引起缺页的指令，这
+          条指令将再次发送 A 到 MMU。这次， MMU 就能正常地翻译 A, 而不会再产生缺页中断了 。
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/Linux-page-fault-handling.png}
+\end{figure}
+
+\subsection{内存映射}
+
+Linux 通过将一个虚拟内存区域与一个磁盘上的对象 (object) 关联起来，以初始化这
+个虚拟内存区域的内容，这个过程称为内存映射 (memory mapping) 。虚拟内存区域可以
+映射到两种类型的对象中的一种：
+\begin{enumerate}
+    \item Linux 文件系统中的普通文件：一个区域可以映射到一个普通磁盘文件的连续部
+          分，例如一个可执行目标文件。文件区 (section) 被分成页大小的片，每一片包含一个虚拟
+          页面的初始内容。因为按需进行页面调度，所以这些虚拟页面没有实际交换进入物理内
+          存，直到 CPU 第一次引用到页面（即发射一个虚拟地址，落在地址空间这个页面的范围之
+          内）。如果区域比文件区要大，那么就用零来填充这个区域的余下部分。
+    \item 匿名文件：一个区域也可以映射到一个匿名文件，匿名文件是由内核创建的，包
+          含的全是二进制零。 CPU 第一次引用这样一个区域内的虚拟页面时，内核就在物理内存
+          中找到一个合适的牺牲页面，如果该页面被修改过，就将这个页面换出来，用二进制零覆
+          盖牺牲页面并更新页表，将这个页面标记为是驻留在内存中的。注意在磁盘和内存之间并
+          没有实际的数据传送。因为这个原因，映射到匿名文件的区域中的页面有时也叫做请求二
+          进制零的页 (demand-zero page) 。
+\end{enumerate}
+
+无论在哪种情况中，一旦一个虚拟页面被初始化了，它就在一个由内核维护的专门的
+交换文件 (swap file) 之间换来换去 。 交换文件也叫做交换空间 (swap space) 或者交换区域
+(swap area) 。需要意识到的很重要的一点是，在任何时刻，交换空间都限制着当前运行着
+的进程能够分配的虚拟页面的总数。
+
+\subsubsection{共享对象}
+
+果虚拟内存系统可以集成到传统的文件系统中，那么就能提供一种简单而高效的把程序和数据加载到内存中的方法。
+
+一个对象可以被映射到虚拟内存的一个区域，要么作为共享对象，要么作为私有对
+象。如果一个进程将一个共享对象映射到它的虚拟地址空间的一个区域内，那么这个进程
+对这个区域的任何写操作，对于那些也把这个共享对象映射到它们虚拟内存的其他进程而
+言，也是可见的。而且，这些变化也会反映在磁盘上的原始对象中。
+
+另一方面，对于一个映射到私有对象的区域做的改变，对千其他进程来说是不可见
+的，并且进程对这个区域所做的任何写操作都不会反映在磁盘上的对象中。一个映射到共
+享对象的虚拟内存区域叫做共享区域。类似地，也有私有区域。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/shared-object.png}
+\end{figure}
+
+因为每个对象都有一个唯一的文件名，内核可以迅速地判定进程 1 已经映射了这个对
+象，而且可以使进程 2 中的页表条目指向相应的物理页面。关键点在于即使对象被映射到
+了多个共享区域，物理内存中也只需要存放共享对象的一个副本。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/private-object.png}
+\end{figure}
+
+私有对象使用一种叫做写时复制 (copy-on-write) 的巧妙技术被映射到虚拟内存中。一个
+私有对象开始生命周期的方式基本上与共享对象的一样，在物理内存中只保存有私有对象的
+一份副本。两个进程将一个私有对象映射到它们虚拟内
+存的不同区域，但是共享这个对象同一个物理副本。对于每个映射私有对象的进程，相应私有
+区域的页表条目都被标记为只读，并且区域结构被标记为私有的写时复制。只要没有进程试图
+写它自己的私有区域，它们就可以继续共享物理内存中对象的一个单独副本。然而，只要有一
+个进程试图写私有区域内的某个页面，那么这个写操作就会触发一个保护故障。
+
+当故障处理程序注意到保护异常是由于进程试图写私有的写时复制区域中的一个页面
+而引起的，它就会在物理内存中创建这个页面的一个新副本，更新页表条目指向这个新的
+副本，然后恢复这个页面的可写权限。 当故障处理程序返回时， CPU 重
+新执行这个写操作，现在在新创建的页面上这个写操作就可以正常执行了 。
+
+\subsubsection{fork 函数}
+
+当 fork 函数被当前进程调用时，内核为新进程创建各种数据结构，并分配给它一个
+唯一的 PID 。 为了给这个新进程创建虚拟内存，它创建了当前进程的 mm\_struct 、区域结
+构和页表的原样副本 。 它将两个进程中的每个页面都标记为只读，并将两个进程中的每个
+区域结构都标记为私有的写时复制 。
+
+当 fork 在新进程中返回时，新进程现在的虚拟内存刚好和调用 fork 时存在的虚拟
+内存相同 。 当这两个进程中的任一个后来进行写操作时，写时复制机制就会创建新页面，
+因此，也就为每个进程保持了私有地址空间的抽象概念。
+
+\subsubsection{execve 函数}
+
+\begin{lstlisting}[style=CStyle]
+execve("a.out", NULL, NULL);
+\end{lstlisting}
+
+execve 函数在当前进程中加载并运行包含在可执行目标文件 a.out
+中的程序，用 a.out 程序有效地替代了当前程序。加载并运行 a.out 需要以下几个步骤：
+
+\begin{itemize}
+    \item 删除已存在的用户区域。删除当前进程虚拟地址的用户部分中的已存在的区域结构。
+    \item 映射私有区域。为新程序的代码、数据、 bss 和栈区域创建新的区域结构。所有这些
+          新的区域都是私有的、写时复制的。代码和数据区域被映射为 a.out 文件中的 .text
+          和 .data 区。 bss 区域是请求二进制零的，映射到匿名文件，其大小包含在 a.out 中 。 栈
+          和堆区域也是请求二进制零的，初始长度为零。
+    \item 映射共享区域。如果 a.out 程序与共享对象（或目标）链接，比如标准 C 库 libc.
+so, 那么这些对象都是动态链接到这个程序的，然后再映射到用户虚拟地址空间中
+的共享区域内。
+    \item 设置程序计数器 (PC) 。 execve 做的最后一件事情就是设置当前进程上下文中的程
+序计数器，使之指向代码区域的入口点 。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/execve-func.png}
+\end{figure}
+
+\subsubsection{mmap 函数}
+
+Linux 进程可以使用 mmap 函数来创建新的虚拟内存区域，并将对象映射到这些区域中。
+
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+#include <sys/mman.h>
+
+void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
+\end{lstlisting}
+
+mmap 函数要求内核创建一个新的虚拟内存区域，最好是从地址 start 开始的一个区
+域，并将文件描述符 fd 指定的对象的一个连续的片 (chunk) 映射到这个新的区域。连续的
+对象片大小为 length 字节，从距文件开始处偏移量为 offset 字节的地方开始。 start
+地址仅仅是一个暗示，通常被定义为 NULL。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{VM/mmap-func.png}
+\end{figure}
+
+若成功时返回指向映射区域的指针，若出错则为 MAP\_FAILED(-1) 。
+
+参数 prot 包含描述新映射的虚拟内存区域的访问权限位（即在相应区域结构中的 vm\_
+prot 位）。
+
+\begin{itemize}
+    \item PROT\_EXEC: 这个区域内的页面由可以被 CPU 执行的指令组成。
+    \item PROT\_READ: 这个区域内的页面可读。
+    \item PROT\_WRITE: 这个区域内的页面可写。
+    \item PROT\_NONE: 这个区域内的页面不能被访问。
+\end{itemize}
+
+参数 flags 由描述被映射对象类型的位组成。
+MAP\_ANON 表示被映射的对象就是一个匿名对象，而相应的虚拟页面是请求二进制零的。
+MAP\_PRIVATE 表示被映射的对象是一个私有的、写时复制的对象，而 MAP\_SHARED 表示是一
+个共享对象。
+
+munmap 函数删除虚拟内存的区域：
+\begin{lstlisting}[style=CStyle]
+#include <unistd.h>
+#include <sys/mman.h>
+
+int munmap(void *start, size_t length);
+\end{lstlisting}
+
+munmap 函数删除从虚拟地址 start 开始的，由接下来 length 字节组成的区域。接
+下来对已删除区域的引用会导致段错误。
+
+
+
+
+
+
+
 
 
 
