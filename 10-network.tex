@@ -1,0 +1,339 @@
+\section{计算机网络}
+
+\subsection{互联网概述}
+
+\subsubsection{互联网的定义}
+
+互联网可从两个视角理解：
+\begin{itemize}
+    \item \textbf{“螺母螺栓”视角（nuts and bolts view）}：由数十亿互联的计算设备（主机/端系统）、通信链路（光纤、铜缆、无线、卫星）、分组交换机（路由器、交换机）组成的庞大基础设施。
+    \item \textbf{“服务”视角}：为各类分布式应用（Web、视频、VoIP、邮件、游戏、社交、物联网等）提供通信服务的平台；同时向应用程序提供编程接口（如套接字），使其能使用传输服务。
+\end{itemize}
+
+互联网本质是“\textbf{网络的网络}”（network of networks），由众多互联的ISP（Internet Service Provider）构成。
+
+\subsubsection{协议的概念}
+
+\begin{itemize}
+    \item 协议是网络中\textbf{所有通信活动}的规则集合，规定：
+          \begin{itemize}
+              \item 消息的格式与顺序（format and order of messages）
+              \item 消息发送/接收时各方应采取的动作（actions on transmission/receipt）
+          \end{itemize}
+    \item 类比人类协议（如问候、提问），网络协议由机器执行，例如：HTTP、TCP、IP、WiFi、4G/5G、Ethernet。
+    \item 互联网标准由\textbf{IETF}（Internet Engineering Task Force）制定，文档发布为\textbf{RFC}（Request for Comments）。
+\end{itemize}
+
+\begin{center}
+    \begin{tabular}{c|c}
+        社会    & 互联网                           \\
+        \hline
+        人/实体  & 主机（Hosts）                     \\
+        服务    & 应用服务（Web, Email, etc.）        \\
+        法律与规则 & 协议与标准（Protocols \& Standards） \\
+    \end{tabular}
+\end{center}
+
+\subsection{网络结构}
+
+\subsubsection{整体拓扑}
+
+互联网由以下典型网络类型互连构成：
+\begin{itemize}
+    \item 移动网络（Mobile Network）
+    \item 家庭网络（Home Network）
+    \item 企业网络（Enterprise Network）
+    \item 本地/区域ISP（Local/Regional ISP）
+    \item 国家/全球ISP（National/Global ISP）
+    \item 数据中心网络（Datacenter Network）
+    \item 内容提供商网络（Content Provider Network，如Google、Facebook自建骨干网）
+\end{itemize}
+
+\subsubsection{核心组件分层}
+
+\begin{itemize}
+    \item \textbf{网络边缘}（Network Edge）：
+          \begin{itemize}
+              \item 主机（Hosts）：客户机（Clients）与服务器（Servers），后者常集中部署于数据中心。
+          \end{itemize}
+
+    \item \textbf{接入网络与物理媒体}（Access Networks \& Physical Media）：
+          \begin{itemize}
+              \item 有线（DSL、Cable、以太网）、无线（WiFi、4G/5G）
+              \item 详见下节“接入网络”。
+          \end{itemize}
+
+    \item \textbf{网络核心}（Network Core）：
+          \begin{itemize}
+              \item 由互联的路由器构成；
+              \item 实现方式：电路交换（Circuit Switching）或分组交换（Packet Switching）。
+          \end{itemize}
+\end{itemize}
+
+\subsection{接入网络与物理媒体}
+
+\subsubsection{有线接入}
+
+\begin{itemize}
+    \item \textbf{电缆调制解调器接入（Cable-based Access）}
+          \begin{itemize}
+              \item 使用HFC（Hybrid Fiber Coax，混合光纤同轴）；
+              \item FDM（频分复用）：数据与电视信号在不同频段共享同轴电缆；
+              \item 不对称速率：下行 40~1200 Mbps，上行 30~100 Mbps；
+              \item 多用户共享接入段，存在争用。
+          \end{itemize}
+
+    \item \textbf{数字用户线（DSL）}
+          \begin{itemize}
+              \item 复用现有电话线（至中心局）；
+              \item 数据与语音信号频分复用；
+              \item 下行 24–52 Mbps，上行 3.5–16 Mbps（专用链路，非共享）；
+              \item 关键设备：DSL调制解调器、分路器（Splitter）、DSLAM（DSL接入复用器）。
+          \end{itemize}
+
+    \item \textbf{家庭/企业网络}
+          \begin{itemize}
+              \item 典型拓扑：Cable/DSL Modem → 路由器（含防火墙/NAT）→ 有线以太网（1 Gbps） / WiFi接入点（54–450 Mbps）；
+              \item 现代设备常集成 Modem/Router/AP 于一体。
+          \end{itemize}
+\end{itemize}
+
+\subsubsection{无线接入}
+
+\begin{itemize}
+    \item \textbf{无线局域网（WLAN / WiFi）}
+          \begin{itemize}
+              \item 802.11b/g/n/ac/ax：速率从11 Mbps到14 Gbps（理论）；
+              \item 覆盖范围：~100英尺（室内）；
+              \item 通过\textbf{接入点}（Access Point, AP）连接至有线网络。
+          \end{itemize}
+
+    \item \textbf{广域蜂窝接入}（4G LTE / 5G）
+          \begin{itemize}
+              \item 由移动运营商提供；
+              \item 覆盖范围：数公里至数十公里；
+              \item 速率：4G达100 Mbps，5G理论达10 Gbps；
+              \item 基于蜂窝塔（Cell Tower），支持\textbf{切换}（Handoff）。
+          \end{itemize}
+\end{itemize}
+
+\subsubsection{物理媒体类型}
+
+\begin{itemize}
+    \item \textbf{导引型媒体}（Guided Media）
+          \begin{itemize}
+              \item 双绞线（Twisted Pair, TP）：Cat5（1 Gbps）、Cat6（10 Gbps）；
+              \item 同轴电缆（Coaxial）：双向、宽带，数百 Mbps/信道；
+              \item 光纤（Fiber Optic）：高带宽（10s–100s Gbps）、低误码率、抗干扰、长中继距离。
+          \end{itemize}
+
+    \item \textbf{非导引型媒体}（Unguided Media / Wireless）
+          \begin{itemize}
+              \item 无线电波：WiFi（10–100s Mbps，10s m）、蜂窝（10s Mbps，km级）、蓝牙（短距）、微波（点对点，45 Mbps）、卫星（Starlink下行<100 Mbps；地球静止轨道端到端延迟~270 ms）；
+              \item 易受反射、遮挡、干扰影响。
+          \end{itemize}
+\end{itemize}
+
+\subsection{网络核心：交换方式}
+
+\subsubsection{分组交换（Packet Switching）}
+
+\begin{itemize}
+    \item 主机将应用消息分片为\textbf{分组}（Packets），逐个发送；
+    \item 路由器采用\textbf{存储转发}（Store-and-Forward）：须收完整个分组后才可转发；
+          \[
+              \text{单跳传输时延} = \frac{L\,(\text{bit})}{R\,(\text{bps})}
+          \]
+    \item 分组在路由器输出链路排队，若缓冲区满则发生\textbf{丢包}（Packet Loss）；
+    \item 优点：适合突发性流量、资源复用、结构简单；
+    \item 缺点：拥塞时延迟与丢包不可控，需上层协议（如TCP）保障可靠性。
+\end{itemize}
+
+\subsubsection{电路交换（Circuit Switching）}
+
+\begin{itemize}
+    \item 通信前预留端到端资源（带宽、缓存等），建立\textbf{虚电路}；
+    \item 复用方式：
+          \begin{itemize}
+              \item FDM（频分复用）：各连接独占频带；
+              \item TDM（时分复用）：各连接周期性占用时隙。
+          \end{itemize}
+    \item 优点：性能有保障（“电路般”体验）；
+    \item 缺点：资源利用率低（空闲时不共享）、需呼叫建立过程。
+\end{itemize}
+
+\subsubsection{核心功能：转发与路由}
+
+\begin{itemize}
+    \item \textbf{转发}（Forwarding / Switching）：
+          \begin{itemize}
+              \item 本地行为：根据分组头部目的地址查询\textbf{转发表}（Forwarding Table），决定输出链路。
+          \end{itemize}
+    \item \textbf{路由}（Routing）：
+          \begin{itemize}
+              \item 全局行为：运行\textbf{路由算法}（如OSPF, BGP）计算源-目的路径，生成转发表。
+          \end{itemize}
+\end{itemize}
+
+\subsection{网络性能指标}
+
+\subsubsection{分组时延}
+
+单跳总时延为：
+\[
+    d_{\text{nodal}} = d_{\text{proc}} + d_{\text{queue}} + d_{\text{trans}} + d_{\text{prop}}
+\]
+其中：
+\begin{itemize}
+    \item $d_{\text{proc}}$：结点处理时延（查错、查表），通常 $< 1\,\mu s$；
+    \item $d_{\text{queue}}$：排队时延，取决于路由器拥塞程度；
+    \item $d_{\text{trans}} = L/R$：传输时延（推入链路所需时间）；
+    \item $d_{\text{prop}} = d/s$：传播时延（$d$：距离，$s$：传播速率 $\approx 2\times10^8\,\text{m/s}$）。
+\end{itemize}
+
+\textbf{注意}：$d_{\text{trans}}$ 与 $d_{\text{prop}}$ 物理意义完全不同（前者与分组长度相关，后者与距离相关）。
+
+\subsubsection{排队与丢包}
+
+\begin{itemize}
+    \item 流量强度（Traffic Intensity）定义为：
+          \[
+              \rho = \frac{L a}{R}
+          \]
+          其中 $a$ 为平均到达率（packet/sec），$L$ 为分组长（bit），$R$ 为链路速率（bps）。
+    \item 当 $\rho \to 1$ 时，平均排队时延趋于无穷；$\rho > 1$ 时系统不稳定；
+    \item 缓冲区有限，队满时新到分组被丢弃（Loss），可由上层重传或放弃。
+\end{itemize}
+
+\subsubsection{吞吐量（Throughput）}
+
+\begin{itemize}
+    \item 定义：发送方到接收方的比特交付速率（瞬时或平均）；
+    \item 端到端吞吐量受路径上\textbf{瓶颈链路}（Bottleneck Link）限制：
+          \[
+              \text{Throughput} = \min\{ R_s, R_c, R/10, \dots \}
+          \]
+          其中 $R_s, R_c$ 为发送/接收链路速率，$R/10$ 表示10条流公平共享的骨干链路速率。
+\end{itemize}
+
+\subsubsection{实测工具：Traceroute}
+
+\begin{itemize}
+    \item 原理：利用IP报头TTL（Time-To-Live）字段逐跳探测；
+    \item 每跳发送3个探测包，测量往返时间（RTT）；
+    \item 可观测路径各跳延迟，识别跨洋链路等高延迟段。
+\end{itemize}
+
+\subsection{协议分层与封装}
+
+\subsubsection{五层互联网协议栈}
+
+\begin{center}
+    \begin{tabular}{c|l}
+        层级           & 功能与典型协议/问题                                 \\
+        \hline
+        \textbf{应用层} & 支持网络应用：HTTP, SMTP, DNS；“传什么？做什么？”          \\
+        \textbf{传输层} & 进程间数据传输：TCP（可靠）、UDP（不可靠）；“从哪到哪？需确认吗？”      \\
+        \textbf{网络层} & 分组路由：IP, OSPF, BGP；“经哪些路由器？”               \\
+        \textbf{链路层} & 毗邻结点间数据传输：Ethernet, WiFi, PPP；“有线/无线？下一站？” \\
+        \textbf{物理层} & 比特在物理媒体上传输：调制、信号；“如何传每个bit？”               \\
+    \end{tabular}
+\end{center}
+
+\subsubsection{封装过程（End-to-End View）}
+
+数据自上而下逐层添加首部（Header），形成嵌套结构（“套娃”）：
+\begin{itemize}
+    \item 应用层：消息（Message）$M$
+    \item 传输层：段（Segment）$H_t\,||\,M$
+    \item 网络层：数据报（Datagram）$H_n\,||\,H_t\,||\,M$
+    \item 链路层：帧（Frame）$H_l\,||\,H_n\,||\,H_t\,||\,M$
+\end{itemize}
+
+中间结点（如路由器）仅处理至网络层（剥离$H_l$，查$H_n$，加新$H_l$）；交换机仅处理链路层；端系统处理全部五层。
+
+\subsection{网络安全}
+
+\subsubsection{安全目标}
+
+\begin{itemize}
+    \item \textbf{机密性}（Confidentiality）：仅授权方能读取内容 → 加密（Encryption）；
+    \item \textbf{完整性}（Integrity）：消息未被篡改 → 数字签名、哈希校验；
+    \item \textbf{认证}（Authentication）：确认通信双方身份 → 口令、证书、SIM卡（蜂窝网）；
+    \item \textbf{可用性}（Availability）：服务对合法用户持续可用 → 抗DoS。
+\end{itemize}
+
+\subsubsection{典型攻击方式}
+
+\begin{itemize}
+    \item \textbf{恶意软件}（Malware）：
+          \begin{itemize}
+              \item 病毒（Virus）、蠕虫（Worm）、木马（Trojan）；
+              \item 间谍软件（Spyware）记录击键与浏览历史；
+              \item 僵尸网络（Botnet）用于垃圾邮件、DDoS。
+          \end{itemize}
+
+    \item \textbf{分组嗅探}（Packet Sniffing）：
+          \begin{itemize}
+              \item 在广播介质（如共享以太网、WiFi）上，网卡设为混杂模式（Promiscuous Mode）可捕获所有经过分组（如Wireshark）。
+          \end{itemize}
+
+    \item \textbf{IP欺骗}（IP Spoofing）：伪造源IP地址注入分组；
+
+    \item \textbf{拒绝服务}（DoS / DDoS）：用海量无效请求耗尽目标资源（服务器、带宽）。
+\end{itemize}
+
+\subsubsection{防御机制}
+
+\begin{itemize}
+    \item \textbf{密码学技术}：
+          \begin{itemize}
+              \item 对称密钥（如AES）、公钥加密（如RSA）；
+              \item 用于TLS（HTTPS）、IPsec、802.11i（WPA2/3）、4G/5G空口加密。
+          \end{itemize}
+    \item \textbf{中间盒防护}：
+          \begin{itemize}
+              \item 防火墙（Firewall）：基于规则过滤进出流量；
+              \item 入侵检测系统（IDS）：监测异常行为。
+          \end{itemize}
+\end{itemize}
+
+\subsection{无线与移动网络}
+
+\subsubsection{基本元素}
+
+\begin{itemize}
+    \item \textbf{无线主机}（Wireless Hosts）：手机、笔记本、IoT设备；可静止或移动（“无线不等于移动”）；
+    \item \textbf{基站}（Base Station）：如蜂窝基站、802.11 AP；连接无线主机与有线网络；
+    \item \textbf{无线链路}（Wireless Link）：多址接入协议协调共享，速率与距离依技术而异（见下表）。
+\end{itemize}
+
+\begin{center}
+    \begin{tabular}{lcc}
+        技术          & 典型速率          & 范围      \\
+        \hline
+        Bluetooth   & 2 Mbps        & 10–30 m \\
+        802.11b     & 11 Mbps       & 室内      \\
+        802.11g/n   & 54 / 600 Mbps & 室内/中距   \\
+        802.11ac/ax & 3.5 / 14 Gbps & 室内/中距   \\
+        4G LTE      & 100 Mbps      & 数 km    \\
+        5G          & 10 Gbps       & 数 km    \\
+    \end{tabular}
+\end{center}
+
+\subsubsection{组网模式}
+
+\begin{itemize}
+    \item \textbf{基础设施模式}（Infrastructure Mode）：
+          \begin{itemize}
+              \item 有固定基站（AP/Cell Tower）；
+              \item 移动时发生\textbf{切换}（Handoff）。
+          \end{itemize}
+    \item \textbf{自组织模式}（Ad Hoc Mode）：
+          \begin{itemize}
+              \item 无基站，节点自主组网并路由（如MANET、VANET、Mesh）；
+              \item 蓝牙Piconet属典型小规模Ad Hoc。
+          \end{itemize}
+\end{itemize}
+
+\newpage
