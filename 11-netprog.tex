@@ -1,0 +1,347 @@
+\section{网络编程}
+
+\subsection{客户端–服务器编程模型}
+
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 每个网络应用都基于 \textbf{客户端–服务器模型}（Client–Server Model）。
+    \item 服务器管理资源（如文件、数据库），客户端请求服务。
+    \item \textbf{客户端–服务器事务} 分四步：
+          \begin{enumerate}
+              \item 客户端发送请求（如浏览器请求网页）；
+              \item 服务器解释请求并操作资源（如读文件）；
+              \item 服务器发送响应（如返回文件）；
+              \item 客户端处理响应（如渲染页面）。
+          \end{enumerate}
+    \item 客户端和服务器是\textbf{进程}，非机器本身；
+    \item 注意：此处“事务”\textbf{$\neq$}数据库事务，无原子性、一致性等特性。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/client-server.png}
+\end{figure}
+
+\subsection{网络基础}
+
+\subsubsection{网络硬件视角}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 对主机而言，网络是又一种 I/O 设备；
+    \item 网卡（NIC）提供物理接口，通过 DMA 与内存交互。
+\end{itemize}
+
+\subsubsection{网络层次结构}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item \textbf{局域网}（LAN）：
+          \begin{itemize}
+              \item 典型技术：\textbf{以太网}（Ethernet）；
+              \item 以太网段：主机通过双绞线连至\textbf{集线器}（Hub），广播帧；
+              \item 每个网卡有唯一 48 位 MAC 地址；
+              \item 帧（Frame）结构：头部（源/目的 MAC、长度） + 有效载荷。
+          \end{itemize}
+    \item 多段 LAN 可经 \textbf{网桥}（Bridge）互联为桥接以太网（节省带宽）；
+    \item 多个异构网络（LAN/WAN）通过 \textbf{路由器}（Router）连接 $\to$ \textbf{互联网络}（Internetwork）。
+\end{itemize}\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/bridged-Ethernet.png}
+\end{figure}
+
+\subsubsection{互联网络核心机制}
+为解决异构网络互连问题，需统一：
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item \textbf{命名机制}：统一地址格式（如 IP 地址）；
+    \item \textbf{传送机制}：将数据打包为标准格式的“包”（Packet）：
+          \[
+              \text{包} = \text{包头（源/目的地址、长度）} + \text{有效载荷}
+          \]
+    \item 关键思想：\textbf{封装}（Encapsulation）
+          （例：IP 包封装于以太网帧内；IP 包内含用户数据）
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/data-transmission.png}
+\end{figure}
+
+\subsection{全球因特网（Internet）}
+
+\subsubsection{基本特性}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 全球主机集合，满足：
+          \begin{enumerate}
+              \item 主机映射为 32 位 IP 地址（IPv4）；
+              \item 地址映射为域名（Domain Name）；
+              \item 进程间可通过 \textbf{连接}（Connection）通信。
+          \end{enumerate}
+    \item 使用 TCP/IP 协议族：
+          \begin{description}
+              \item[IP]：无连接、不可靠、尽力交付（Best-effort）；
+              \item[UDP]：扩展 IP，支持进程间通信（端口号）；
+              \item[TCP]：基于 IP，提供可靠、全双工、有序字节流传输。
+          \end{description}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/hardware-software-organization.png}
+\end{figure}
+
+\subsubsection{IP 地址}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 32 位无符号整数，网络字节序（大端）存储于 \texttt{struct in\_addr}：
+          \begin{lstlisting}[style=CStyle]
+struct in_addr { uint32_t s_addr; };
+\end{lstlisting}
+    \item 表示法：\textbf{点分十进制}（Dotted-decimal），如 \texttt{128.2.194.242}。
+    \item 字节序转换函数：
+
+          \begin{lstlisting}[style=CStyle]
+#include <arpa/inet.h>
+uint32_t htonl(uint32_t hostlong);
+uint16_t htons(uint16_t hostshort);
+uint32_t ntohl(uint32_t netlong);
+uint16_t ntohs(uint16_t netshort);
+\end{lstlisting}
+\end{itemize}
+
+\subsubsection{域名系统（DNS）}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 层次结构：根 → 顶级域（\texttt{.com}、\texttt{.edu}）→ 二级域（\texttt{mit.edu}）→ 子域（\texttt{cs.mit.edu}）；
+    \item DNS 数据库将域名映射至 IP 地址（一对多、多对多均可能）；
+    \item 工具：\texttt{nslookup}、\texttt{hostname}。
+\end{itemize}
+
+\subsubsection{因特网连接}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 连接特性：点对点、全双工、可靠、有序；
+    \item \textbf{套接字}（Socket）是连接的端点；
+    \item 套接字地址 = IP 地址 + 16 位端口（\texttt{IP:Port}）；
+    \item 客户端端口：内核自动分配（\textbf{临时端口}）；
+          服务器端口：\textbf{知名端口}（Well-known Port），如 80（HTTP）、25（SMTP）；
+    \item 文件 \texttt{/etc/services} 存储服务名 $\leftrightarrow$ 端口号映射；
+    \item 唯一连接由 \textbf{套接字对} 确定：
+          \[
+              (\text{cliaddr:cliport},\ \text{servaddr:servport})
+          \]
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/connection.png}
+\end{figure}
+
+\subsection{套接字接口（Socket Interface）}
+
+\subsubsection{套接字地址结构}
+
+因特网的套接字地址存放在类型为 sockaddr\_in 的 16 字节结构中。
+对于因特网应用， sin\_family 成员是 AF\_INET, sin\_port 成员是一个 16 位的端口号，
+而 sin\_addr 成员就是一个 32 位的 IP 地址。 IP 地址和端口号总是以网络字节顺序（大端
+法）存放的。
+
+\begin{lstlisting}[language=C]
+// IPv4 地址结构
+struct in_addr { uint32_t s_addr; };
+
+// IPv4 套接字地址结构
+struct sockaddr_in {
+    uint16_t sin_family;   // AF_INET
+    uint16_t sin_port;     // 网络字节序
+    struct in_addr sin_addr; // 网络字节序
+    unsigned char sin_zero[8]; // padding
+};
+
+// 通用结构（供系统调用使用）
+struct sockaddr {
+    uint16_t sa_family;
+    char sa_data[14];
+};
+\end{lstlisting}
+常用简化：
+\begin{lstlisting}[language=C]
+typedef struct sockaddr SA;
+\end{lstlisting}
+
+connect、bind 和 accept 函数要求一个指向与协议相关的套接字地址结构的指针。
+套接字接口的设计者面临的问题是，如何定义这些函数，使之能接受各种类型的套接字地
+址结构。今天我们可以使用通用的 void 指针，但是那时在 C 中并不存在这种类型的指
+针。解决办法是定义套接字函数要求一个指向通用 sockaddr 结构的指针，然
+后要求应用程序将与协议特定的结构的指针强制转换成这个通用结构。
+
+\subsubsection{核心套接字函数}
+
+\texttt{socket()}: 创建部分打开的套接字描述符；
+\begin{lstlisting}[language=C]
+int socket(int domain, int type, int protocol);
+// 示例：socket(AF_INET, SOCK_STREAM, 0);
+\end{lstlisting}
+
+\texttt{connect()}: 客户端主动连接服务器；
+\begin{lstlisting}[language=C]
+int connect(int sockfd, const SA *addr, socklen_t addrlen);
+\end{lstlisting}
+
+\texttt{bind()}: 服务器将套接字与本地地址绑定；
+\begin{lstlisting}[language=C]
+int bind(int sockfd, const SA *my_addr, socklen_t addrlen);
+\end{lstlisting}
+
+\texttt{listen()}: 将主动套接字转为监听套接字；
+\begin{lstlisting}[language=C]
+int listen(int sockfd, int backlog); // backlog $\approx$ 1024
+\end{lstlisting}
+
+\texttt{accept()}: 服务器接受连接，返回\textbf{已连接描述符}；
+\begin{lstlisting}[language=C]
+int accept(int listenfd, SA *addr, socklen_t *addrlen);
+\end{lstlisting}
+
+\textbf{注意}：监听描述符（长期存在）不等同于已连接描述符（每次连接新建）。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{netprog/fd-connection.png}
+\end{figure}
+
+\subsubsection{主机/服务名转换：\texttt{getaddrinfo} / \texttt{getnameinfo}}
+
+\paragraph{\texttt{getaddrinfo}}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 将（主机名，服务名）→ 套接字地址链表（协议无关、可重入）；
+    \item 核心结构 \texttt{addrinfo}：
+          \begin{lstlisting}[language=C]
+struct addrinfo {
+    int ai_flags;
+    int ai_family;     // AF_INET, AF_INET6
+    int ai_socktype;   // SOCK_STREAM, ...
+    int ai_protocol;
+    char *ai_canonname;
+    size_t ai_addrlen;
+    struct sockaddr *ai_addr;
+    struct addrinfo *ai_next;
+};
+\end{lstlisting}
+    \item 典型用法（客户端）：
+          \begin{lstlisting}[language=C]
+struct addrinfo hints, *listp;
+memset(&hints, 0, sizeof(hints));
+hints.ai_family = AF_INET;
+hints.ai_socktype = SOCK_STREAM;
+getaddrinfo(hostname, port, &hints, &listp);
+// 遍历 listp，依次 socket() + connect()
+freeaddrinfo(listp);
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{\texttt{getnameinfo}}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 将套接字地址 → （主机名，服务名）；
+    \item 常用标志：\texttt{NI\_NUMERICHOST}（返回 IP 字符串）、\texttt{NI\_NUMERICSERV}（返回端口号）。
+\end{itemize}
+
+\subsubsection{辅助函数（CSAPP 封装）}
+
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item \texttt{open\_clientfd(char *hostname, char *port)}
+          客户端用：自动解析地址并连接；返回可读写的已连接描述符。
+
+    \item \texttt{open\_listenfd(char *port)}
+          服务器用：自动绑定通配地址、设置 \texttt{SO\_REUSEADDR}、转监听状态；返回监听描述符。
+\end{itemize}
+
+\subsubsection{客户端/服务器示例}
+
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item \textbf{客户端}（如 echo client）：
+          \begin{lstlisting}[language=C]
+clientfd = Open_clientfd(host, port);
+Rio_readinitb(&rio, clientfd);
+while (Fgets(buf, MAXLINE, stdin))
+    Rio_writen(clientfd, buf, strlen(buf));
+    Rio_readlineb(&rio, buf, MAXLINE);
+    Fputs(buf, stdout);
+Close(clientfd);
+    \end{lstlisting}
+
+    \item \textbf{迭代服务器}（Iterative Server）：
+          \begin{lstlisting}[language=C]
+listenfd = Open_listenfd(port);
+while (1) {
+    connfd = Accept(listenfd, (SA*)&clientaddr, &clientlen);
+    Getnameinfo(...); // 可选：打印客户端信息
+    echo(connfd);     // 处理请求
+    Close(connfd);    // 关闭连接
+}
+    \end{lstlisting}
+
+    \item \texttt{echo()}: 读一行，回送一行；
+    \item 注意：\texttt{EOF} 是内核检测的条件（非真实字符），由 \texttt{read()} 返回 0 触发。
+\end{itemize}
+
+\subsection{Web 服务器（Tiny Server）}
+
+\subsubsection{HTTP 基础}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 应用层协议：基于文本行；客户端（浏览器）$\leftrightarrow$ 服务器；
+    \item 内容类型由 MIME 类型标识（如 \texttt{text/html}、\texttt{image/jpeg}）；
+    \item \textbf{静态内容}：直接返回磁盘文件；
+          \textbf{动态内容}：执行 CGI 程序，返回其输出。
+    \item URL 示例：\texttt{http://host:port/path?arg1\&arg2}
+          \begin{itemize}
+              \item 服务器用前缀决定连接目标；
+              \item 服务器用后缀决定内容（静态/动态）及路径。
+          \end{itemize}
+\end{itemize}
+
+\subsubsection{HTTP 事务}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item \textbf{请求}（Request）：
+          \begin{verbatim}
+    GET / HTTP/1.1\r\n
+    Host: www.example.com\r\n
+    \r\n
+    \end{verbatim}
+          格式：\texttt{method URI version} + 请求头 + 空行
+
+    \item \textbf{响应}（Response）：
+          \begin{verbatim}
+    HTTP/1.0 200 OK\r\n
+    Content-type: text/html\r\n
+    Content-length: 123\r\n
+    \r\n
+    <html>...</html>
+    \end{verbatim}
+          格式：\texttt{version status-code status-message} + 响应头 + 空行 + 主体
+\end{itemize}
+\begin{table}[htbp]
+    \centering
+\begin{tabular}{|c|c|}
+    状态码 & 含义                \\
+    \hline
+    200 & OK（成功）            \\
+    301 & Moved Permanently \\
+    400 & Bad Request       \\
+    403 & Forbidden         \\
+    404 & Not Found         \\
+    501 & Not Implemented   \\
+\end{tabular}
+\end{table}
+
+\subsubsection{CGI 与动态内容}
+\begin{itemize}[leftmargin=*,noitemsep]
+    \item 参数传递：
+          \begin{itemize}
+              \item \texttt{GET}: 参数在 URL 中（\texttt{?arg1\&arg2}）→ 子进程设环境变量 \texttt{QUERY\_STRING}；
+              \item \texttt{POST}: 参数在请求体中 → 子进程需从 stdin 读取（重定向后）。
+          \end{itemize}
+    \item 子进程执行 CGI 程序前：
+          \begin{itemize}
+              \item 设置必要环境变量（如 \texttt{SERVER\_PORT}、\texttt{REMOTE\_ADDR}）；
+              \item \texttt{dup2(connfd, STDOUT\_FILENO)}：将 stdout 重定向至客户端；
+              \item \texttt{execve()} 加载程序。
+          \end{itemize}
+    \item CGI 程序负责输出完整 HTTP 响应（含头+体）。
+\end{itemize}
+
+\newpage
